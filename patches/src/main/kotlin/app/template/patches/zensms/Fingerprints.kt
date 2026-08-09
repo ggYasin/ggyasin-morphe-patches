@@ -1,0 +1,23 @@
+package app.template.patches.zensms
+
+import app.morphe.patcher.Fingerprint
+import com.android.tools.smali.dexlib2.AccessFlags
+
+/** Matches PremiumManager.hasPremium(): boolean. */
+object HasPremiumFingerprint : Fingerprint(
+    definingClass = "Lcom/zensms/app/domain/premium/PremiumManager;",
+    name = "hasPremium",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+    returnType = "Z",
+    parameters = emptyList(),
+    strings = listOf("last_verified_time", "Premium verification stale ("),
+)
+
+/** Matches PremiumManager.isPremium(): StateFlow<Boolean>. */
+object IsPremiumFingerprint : Fingerprint(
+    definingClass = "Lcom/zensms/app/domain/premium/PremiumManager;",
+    name = "isPremium",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+    returnType = "Lz/vF;",
+    parameters = emptyList(),
+)

@@ -1,0 +1,44 @@
+name: Build MPP
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  build:
+    name: Build patch bundle
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Build MPP
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :patches:buildAndroid --no-daemon
+
+      - name: Show bundle
+        run: ls -lh patches/build/libs/*.mpp
+
+      - name: Upload MPP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: patchlab-zensms-mpp
+          path: patches/build/libs/*.mpp
+          if-no-files-found: error
+          retention-days: 14
