@@ -8,20 +8,20 @@ import app.template.patches.shared.Constants.ZEN_SMS_COMPATIBILITY
 
 @Suppress("unused")
 val disableZenSmsPremiumStatePatch = bytecodePatch(
-    name = "Disable premium state",
-    description = "Makes synchronous and reactive premium checks report false.",
-    default = false,
+    name = "enable premium state",
+    description = "Makes synchronous and reactive premium checks report true.",
+    default = true,
 ) {
     compatibleWith(ZEN_SMS_COMPATIBILITY)
 
     execute {
-        // Equivalent to: fun hasPremium(): Boolean = false
+        // Equivalent to: fun hasPremium(): Boolean = true
         HasPremiumFingerprint.method.apply {
             removeInstructions(0, instructions.count())
             addInstructions(
                 0,
                 """
-                const/4 v0, 0x0
+                const/4 v0, 0x1
                 return v0
                 """.trimIndent(),
             )
@@ -34,7 +34,7 @@ val disableZenSmsPremiumStatePatch = bytecodePatch(
             addInstructions(
                 0,
                 """
-                sget-object v0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
+                sget-object v0, Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;
                 invoke-static {v0}, Lz/Md;->b(Ljava/lang/Object;)Lkotlinx/coroutines/flow/m;
                 move-result-object v0
                 return-object v0
