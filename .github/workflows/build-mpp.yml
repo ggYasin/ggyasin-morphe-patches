@@ -36,7 +36,7 @@ jobs:
         run: ls -lh patches/build/libs/*.mpp
 
       - name: Upload MPP artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: patchlab-zensms-mpp
           path: patches/build/libs/*.mpp
