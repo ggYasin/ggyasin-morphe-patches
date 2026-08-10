@@ -1,3 +1,7 @@
+# 1.1.1
+
+- Fix on-device OTP hook application by emitting branch instructions directly.
+
 # 1.1.0
 
 - Add OTPHelper-first OTP detection with the original ZenSMS detector as fallback.

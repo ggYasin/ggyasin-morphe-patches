@@ -1,16 +1,22 @@
 package app.template.patches.zensms
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.extensions.newLabel
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringsOption
-import app.morphe.patcher.util.smali.ExternalLabel
 import app.template.patches.shared.Constants.ZEN_SMS_COMPATIBILITY
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11n
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11x
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21t
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction3rc
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 
@@ -110,22 +116,54 @@ private fun hookZenSmsExtractor() {
         "ZenSMS OTP extractor has no local register for the guard"
     }
 
-    method.addInstructionsWithLabels(
-        0,
-        """
-        invoke-static {p0}, $OTP_EXTENSION_CLASS->shouldIgnore(Ljava/lang/String;)Z
-        move-result v0
-        if-eqz v0, :otphelper_try_extract
-        const/4 v0, 0x0
-        return-object v0
+    val bodyRegister = implementation.registerCount - parameterWidth
+    val shouldIgnoreReference = ImmutableMethodReference(
+        OTP_EXTENSION_CLASS,
+        "shouldIgnore",
+        listOf("Ljava/lang/String;"),
+        "Z",
+    )
+    val extractReference = ImmutableMethodReference(
+        OTP_EXTENSION_CLASS,
+        "extract",
+        listOf("Ljava/lang/String;"),
+        "Ljava/lang/String;",
+    )
 
-        :otphelper_try_extract
-        invoke-static {p0}, $OTP_EXTENSION_CLASS->extract(Ljava/lang/String;)Ljava/lang/String;
-        move-result-object v0
-        if-eqz v0, :zensms_stock_extractor
-        return-object v0
-        """.trimIndent(),
-        ExternalLabel("zensms_stock_extractor", method.instructions.first()),
+    // Build the branches directly instead of using Morphe's inline-smali
+    // compiler. Its synthetic method always returns void, which can discard a
+    // block containing return-object and produce "Collection is empty".
+    val stockExtractorLabel = method.newLabel(0)
+    implementation.addInstructions(
+        0,
+        listOf(
+            BuilderInstruction3rc(
+                Opcode.INVOKE_STATIC_RANGE,
+                bodyRegister,
+                1,
+                extractReference,
+            ),
+            BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, 0),
+            BuilderInstruction21t(Opcode.IF_EQZ, 0, stockExtractorLabel),
+            BuilderInstruction11x(Opcode.RETURN_OBJECT, 0),
+        ),
+    )
+
+    val tryExtractLabel = method.newLabel(0)
+    implementation.addInstructions(
+        0,
+        listOf(
+            BuilderInstruction3rc(
+                Opcode.INVOKE_STATIC_RANGE,
+                bodyRegister,
+                1,
+                shouldIgnoreReference,
+            ),
+            BuilderInstruction11x(Opcode.MOVE_RESULT, 0),
+            BuilderInstruction21t(Opcode.IF_EQZ, 0, tryExtractLabel),
+            BuilderInstruction11n(Opcode.CONST_4, 0, 0),
+            BuilderInstruction11x(Opcode.RETURN_OBJECT, 0),
+        ),
     )
 }
 
