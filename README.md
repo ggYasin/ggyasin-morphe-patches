@@ -17,14 +17,12 @@ Makes ZenSMS's synchronous and reactive premium-state checks report enabled.
 
 ### RTL SMS lists
 
-Adds two independent switches at the bottom of **Settings → Appearance**:
+Adds one switch at the bottom of **Settings → Appearance**:
 
-- **RTL conversation list** mirrors conversation rows and previews.
-- **RTL messages in conversations** mirrors message contents and metadata while
-  preserving the physical sent/received bubble sides.
+- **RTL conversation list** mirrors conversation rows and previews while keeping
+  contact names and phone numbers left to right and physically right-aligned.
 
-Both RTL switches default to off and store their state in app-private local
-preferences.
+The switch defaults to off and stores its state in app-private local preferences.
 
 ## Build
 

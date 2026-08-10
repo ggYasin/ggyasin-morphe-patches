@@ -18,12 +18,9 @@ public final class RtlSmsLayout {
     private static final String TAG = "PatchLabRTL";
     private static final String PREFS_NAME = "patchlab_rtl_sms_layout";
     private static final String CONVERSATION_LIST_KEY = "rtl_conversation_list";
-    private static final String CONVERSATION_MESSAGES_KEY = "rtl_conversation_messages";
 
     private static final ToggleCallback CONVERSATION_LIST_CALLBACK =
             new ToggleCallback(CONVERSATION_LIST_KEY);
-    private static final ToggleCallback CONVERSATION_MESSAGES_CALLBACK =
-            new ToggleCallback(CONVERSATION_MESSAGES_KEY);
 
     private static final ThreadLocal<ArrayDeque<Boolean>> PROVIDER_STACK =
             new ThreadLocal<ArrayDeque<Boolean>>() {
@@ -47,6 +44,8 @@ public final class RtlSmsLayout {
     private static Object localContext;
     private static Object localLayoutDirection;
     private static Object rtlLayoutDirection;
+    private static Object ltrLayoutDirection;
+    private static Object rightTextAlign;
 
     private static volatile boolean settingsReflectionReady;
     private static Method settingsSwitch;
@@ -55,7 +54,7 @@ public final class RtlSmsLayout {
     private RtlSmsLayout() {
     }
 
-    /** Adds the two independent switches at the end of ZenSMS' Appearance section. */
+    /** Adds the conversation-list switch at the end of ZenSMS' Appearance section. */
     public static void renderSettings(Object composer) {
         try {
             ensureComposeReflection();
@@ -66,16 +65,9 @@ public final class RtlSmsLayout {
             renderSwitch(
                     composer,
                     "RTL conversation list",
-                    "Place conversation rows and previews right to left",
+                    "Mirror rows while keeping names and numbers left to right",
                     isEnabled(CONVERSATION_LIST_KEY),
                     CONVERSATION_LIST_CALLBACK
-            );
-            renderSwitch(
-                    composer,
-                    "RTL messages in conversations",
-                    "Render message contents and metadata right to left",
-                    isEnabled(CONVERSATION_MESSAGES_KEY),
-                    CONVERSATION_MESSAGES_CALLBACK
             );
         } catch (Throwable error) {
             // A failed reflective composable call can leave Composer state open;
@@ -86,12 +78,24 @@ public final class RtlSmsLayout {
 
     /** Opens a balanced LocalLayoutDirection provider for a conversation row. */
     public static void beginConversationList(Object composer) {
-        beginDirectionProvider(composer, CONVERSATION_LIST_KEY);
+        beginDirectionProvider(composer, true);
     }
 
-    /** Opens a balanced LocalLayoutDirection provider for message content. */
-    public static void beginConversationMessages(Object composer) {
-        beginDirectionProvider(composer, CONVERSATION_MESSAGES_KEY);
+    /** Gives only the conversation title an LTR paragraph fallback. */
+    public static void beginConversationLabel(Object composer) {
+        beginDirectionProvider(composer, false);
+    }
+
+    /** Uses physical right alignment only while the conversation-list switch is on. */
+    public static Object conversationLabelTextAlign() {
+        return isEnabled(CONVERSATION_LIST_KEY) ? rightTextAlign : null;
+    }
+
+    /** Makes Text honor the explicit alignment only while the switch is on. */
+    public static int conversationLabelDefaultMask(int originalMask) {
+        return isEnabled(CONVERSATION_LIST_KEY) && rightTextAlign != null
+                ? originalMask & ~0x200
+                : originalMask;
     }
 
     /** Closes the provider opened by either begin method. */
@@ -109,15 +113,15 @@ public final class RtlSmsLayout {
         }
     }
 
-    private static void beginDirectionProvider(Object composer, String preferenceKey) {
+    private static void beginDirectionProvider(Object composer, boolean useRtlWhenEnabled) {
         boolean started = false;
         try {
             ensureComposeReflection();
             captureContext(composer);
 
             Object inheritedDirection = composerConsume.invoke(composer, localLayoutDirection);
-            Object effectiveDirection = isEnabled(preferenceKey)
-                    ? rtlLayoutDirection
+            Object effectiveDirection = isEnabled(CONVERSATION_LIST_KEY)
+                    ? (useRtlWhenEnabled ? rtlLayoutDirection : ltrLayoutDirection)
                     : inheritedDirection;
             Object providedValue = compositionLocalProvides.invoke(
                     localLayoutDirection,
@@ -199,6 +203,19 @@ public final class RtlSmsLayout {
                 loader
         );
         rtlLayoutDirection = Enum.valueOf(layoutDirection, "Rtl");
+        ltrLayoutDirection = Enum.valueOf(layoutDirection, "Ltr");
+
+        Class<?> textAlignClass = Class.forName(
+                "androidx.compose.ui.text.style.TextAlign",
+                true,
+                loader
+        );
+        Object textAlignCompanion = textAlignClass.getField("Companion").get(null);
+        int right = (Integer) textAlignCompanion.getClass()
+                .getMethod("getRight-e0LSkKk")
+                .invoke(textAlignCompanion);
+        rightTextAlign = textAlignClass.getMethod("box-impl", int.class)
+                .invoke(null, right);
         composeReflectionReady = true;
     }
 

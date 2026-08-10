@@ -7,7 +7,6 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.template.patches.shared.Constants.ZEN_SMS_COMPATIBILITY
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
-import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val RTL_EXTENSION = "Lapp/patchlab/extension/rtl/RtlSmsLayout;"
@@ -17,7 +16,7 @@ private const val COMPOSER = "Landroidx/compose/runtime/Composer;"
 val rtlZenSmsLayoutPatch = bytecodePatch(
     name = "RTL SMS lists",
     description =
-        "Adds independent RTL layout switches for conversation rows and messages.",
+        "Adds RTL conversation rows while keeping conversation titles left to right.",
     default = false,
 ) {
     compatibleWith(ZEN_SMS_COMPATIBILITY)
@@ -26,8 +25,6 @@ val rtlZenSmsLayoutPatch = bytecodePatch(
     execute {
         addSettingsSwitches()
         wrapConversationRows()
-        wrapMessageBubbleContent()
-        wrapMessageMetadata()
     }
 }
 
@@ -67,76 +64,65 @@ private fun wrapConversationRows() {
     }
     check(endIndex > beginIndex) { "Could not find the conversation-row closing anchor" }
 
-    // Add the closing hook first so the earlier insertion cannot shift its index.
+    val titleTextIndices = method.instructions.withIndex().filter { (_, instruction) ->
+        val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference
+        reference?.definingClass == "Landroidx/compose/material3/TextKt;" &&
+            reference.name == "Text-IbK3jfQ" &&
+            reference.parameterTypes.firstOrNull().toString() ==
+                "Landroidx/compose/ui/text/AnnotatedString;"
+    }.map { it.index }
+    check(titleTextIndices.size == 1) {
+        "Expected exactly one annotated conversation-title Text call"
+    }
+    val titleTextIndex = titleTextIndices.single()
+    check(titleTextIndex > beginIndex && titleTextIndex < endIndex) {
+        "Conversation-title Text call is outside the row content"
+    }
+
+    // Add hooks from the end of the method backwards so earlier insertions cannot
+    // shift the original anchor indices.
     method.addInstruction(
         endIndex + 1,
         "invoke-static {v12}, $RTL_EXTENSION->endDirectionProvider(Ljava/lang/Object;)V",
     )
     method.addInstruction(
+        titleTextIndex + 1,
+        "invoke-static {v12}, $RTL_EXTENSION->endDirectionProvider(Ljava/lang/Object;)V",
+    )
+
+    // The row stays RTL, but the title paragraph uses LTR fallback for neutral
+    // phone-number characters and a physical Right alignment. Inject these in
+    // reverse order at one index to produce begin -> align -> Text -> end.
+    method.addInstruction(
+        titleTextIndex,
+        "check-cast v28, Landroidx/compose/ui/text/style/TextAlign;",
+    )
+    method.addInstruction(
+        titleTextIndex,
+        "move-result-object v28",
+    )
+    method.addInstruction(
+        titleTextIndex,
+        "invoke-static {}, $RTL_EXTENSION->conversationLabelTextAlign()Ljava/lang/Object;",
+    )
+    method.addInstruction(
+        titleTextIndex,
+        "move-result v41",
+    )
+    method.addInstruction(
+        titleTextIndex,
+        "invoke-static/range {v41 .. v41}, " +
+            "$RTL_EXTENSION->conversationLabelDefaultMask(I)I",
+    )
+    method.addInstruction(
+        titleTextIndex,
+        "invoke-static {v12}, $RTL_EXTENSION->beginConversationLabel(Ljava/lang/Object;)V",
+    )
+
+    method.addInstruction(
         // The trace-disabled branch joins on the anchor itself. Insert after it
         // so both traced and normal composition paths open the provider.
         beginIndex + 1,
         "invoke-static {v12}, $RTL_EXTENSION->beginConversationList(Ljava/lang/Object;)V",
-    )
-}
-
-context(_: BytecodePatchContext)
-private fun wrapMessageBubbleContent() {
-    val method = RtlMessageBubbleContentFingerprint.method
-    val beginIndex = method.instructions.indexOfFirst { instruction ->
-        val reference = (instruction as? ReferenceInstruction)?.reference as? FieldReference
-        instruction.opcode == Opcode.SGET_OBJECT &&
-            reference?.definingClass == "Landroidx/compose/ui/Modifier;" &&
-            reference.name == "Companion"
-    }
-    check(beginIndex >= 0) { "Could not find the message-content opening anchor" }
-
-    val traceCloseIndex = method.instructions.indexOfLast { instruction ->
-        val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference
-        reference?.definingClass == "Lz/k2;" &&
-            reference.name == "j" &&
-            reference.returnType == "Z"
-    }
-    check(traceCloseIndex > beginIndex) { "Could not find the message-content closing anchor" }
-
-    // The instruction after k2.j is its move-result; close immediately after it.
-    method.addInstruction(
-        traceCloseIndex + 2,
-        "invoke-static {v6}, $RTL_EXTENSION->endDirectionProvider(Ljava/lang/Object;)V",
-    )
-    method.addInstruction(
-        // Preserve the branch label on the anchor and run on both trace paths.
-        beginIndex + 1,
-        "invoke-static {v6}, $RTL_EXTENSION->beginConversationMessages(Ljava/lang/Object;)V",
-    )
-}
-
-context(_: BytecodePatchContext)
-private fun wrapMessageMetadata() {
-    val method = RtlMessageMetadataFingerprint.method
-    val beginIndex = method.instructions.indexOfFirst { instruction ->
-        val reference = (instruction as? ReferenceInstruction)?.reference as? FieldReference
-        instruction.opcode == Opcode.SGET_OBJECT &&
-            reference?.definingClass == "Landroidx/compose/ui/Modifier;" &&
-            reference.name == "Companion"
-    }
-    check(beginIndex >= 0) { "Could not find the message-metadata opening anchor" }
-
-    val traceCloseIndex = method.instructions.indexOfLast { instruction ->
-        val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference
-        reference?.definingClass == "Lz/k2;" &&
-            reference.name == "j" &&
-            reference.returnType == "Z"
-    }
-    check(traceCloseIndex > beginIndex) { "Could not find the message-metadata closing anchor" }
-
-    method.addInstruction(
-        traceCloseIndex + 2,
-        "invoke-static {v15}, $RTL_EXTENSION->endDirectionProvider(Ljava/lang/Object;)V",
-    )
-    method.addInstruction(
-        // Preserve the branch label on the anchor and run on both trace paths.
-        beginIndex + 1,
-        "invoke-static {v15}, $RTL_EXTENSION->beginConversationMessages(Ljava/lang/Object;)V",
     )
 }

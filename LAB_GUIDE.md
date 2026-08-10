@@ -1,8 +1,9 @@
 # PatchLab ZenSMS build and import
 
 This repository builds one local Morphe patch bundle containing the ZenSMS
-patches documented in the README. It does not publish a GitHub Release and does
-not register a remote patch source with Morphe.
+patches documented in the README. Versioned bundles are also published as
+GitHub Release assets. The repository does not register a remote patch source
+with Morphe.
 
 ## Build with GitHub Actions
 
@@ -33,8 +34,9 @@ Manager as the app to handle it.
 3. Choose `ZenSMS_1.2.04.xapk` when prompted for the original app bundle.
 4. Enable the patches you want to test:
    - **Enable premium state** changes the existing premium-state checks.
-   - **RTL SMS lists** adds two independent switches under
-     **Settings → Appearance** in the patched app.
+   - **RTL SMS lists** adds a conversation-list switch under
+     **Settings → Appearance**. It mirrors the rows while keeping contact
+     names and phone numbers left to right and right-aligned.
 5. Patch and save the output.
 6. Install only on an emulator or disposable test device.
 
