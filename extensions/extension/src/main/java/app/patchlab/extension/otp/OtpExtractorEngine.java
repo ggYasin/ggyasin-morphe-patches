@@ -108,10 +108,10 @@ final class OtpExtractorEngine {
 
     OtpExtractorEngine(List<String> additionalSensitivePhrases,
                        List<String> additionalIgnoredPhrases) {
-        List<String> sensitivePhrases = append(
-                DEFAULT_SENSITIVE_PHRASES, additionalSensitivePhrases);
-        List<String> ignoredPhrases = append(
-                DEFAULT_IGNORED_PHRASES, additionalIgnoredPhrases);
+        List<String> sensitivePhrases = withUnicodeBoundaries(append(
+                DEFAULT_SENSITIVE_PHRASES, additionalSensitivePhrases));
+        List<String> ignoredPhrases = withUnicodeBoundaries(append(
+                DEFAULT_IGNORED_PHRASES, additionalIgnoredPhrases));
 
         String sensitiveAlternation = joinWithPipe(sensitivePhrases);
         String digitClass = "[" + DIGITS + "]";
@@ -138,7 +138,7 @@ final class OtpExtractorEngine {
         generalCodeMatcher = Pattern.compile(generalPattern, FLAGS);
         specialCodeMatcher = Pattern.compile(specialPattern, FLAGS);
         ignoredPhrasesMatcher = Pattern.compile(
-                "\\b(" + joinWithPipe(ignoredPhrases) + ")\\b", FLAGS);
+                "(?U:\\b)(" + joinWithPipe(ignoredPhrases) + ")(?U:\\b)", FLAGS);
         cleanupPhrasesMatcher = Pattern.compile(
                 "(" + joinWithPipe(CLEANUP_PHRASES) + ")", FLAGS);
     }
@@ -195,6 +195,14 @@ final class OtpExtractorEngine {
             joined.append(value);
         }
         return joined.toString();
+    }
+
+    private static List<String> withUnicodeBoundaries(List<String> patterns) {
+        List<String> normalized = new ArrayList<>(patterns.size());
+        for (String pattern : patterns) {
+            normalized.add(pattern.replace("\\b", "(?U:\\b)"));
+        }
+        return normalized;
     }
 
     private static String normalizeCode(String code) {
