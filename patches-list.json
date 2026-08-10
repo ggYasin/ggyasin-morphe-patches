@@ -1,5 +1,122 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "0.0.0",
-  "patches": []
+  "version": "1.1.0",
+  "patches": [
+    {
+      "name": "Expanded OTP detection",
+      "description": "Uses OTPHelper-compatible detection first, then falls back to ZenSMS.",
+      "default": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.zensms.app",
+          "name": "ZenSMS",
+          "description": null,
+          "apkFileType": "XAPK",
+          "appIconColor": "#0066CC",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.2.04",
+              "versionCodes": {
+                "ARM64_V8A": 141,
+                "ARMEABI_V7A": 141,
+                "X86_64": 141,
+                "X86": 141
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "additionalSensitivePhrases",
+          "title": "Additional OTP phrases",
+          "description": "Regex fragments that identify OTP context. Applied when repatching.",
+          "required": false,
+          "type": "kotlin.collections.List<kotlin.String>",
+          "default": [],
+          "values": null
+        },
+        {
+          "key": "additionalIgnoredPhrases",
+          "title": "Additional ignored phrases",
+          "description": "Regex fragments that suppress OTP detection. Applied when repatching.",
+          "required": false,
+          "type": "kotlin.collections.List<kotlin.String>",
+          "default": [],
+          "values": null
+        }
+      ]
+    },
+    {
+      "name": "RTL SMS lists",
+      "description": "Adds RTL conversation rows while keeping conversation titles left to right.",
+      "default": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.zensms.app",
+          "name": "ZenSMS",
+          "description": null,
+          "apkFileType": "XAPK",
+          "appIconColor": "#0066CC",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.2.04",
+              "versionCodes": {
+                "ARM64_V8A": 141,
+                "ARMEABI_V7A": 141,
+                "X86_64": 141,
+                "X86": 141
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "enable premium state",
+      "description": "Makes synchronous and reactive premium checks report true.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.zensms.app",
+          "name": "ZenSMS",
+          "description": null,
+          "apkFileType": "XAPK",
+          "appIconColor": "#0066CC",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.2.04",
+              "versionCodes": {
+                "ARM64_V8A": 141,
+                "ARMEABI_V7A": 141,
+                "X86_64": 141,
+                "X86": 141
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    }
+  ]
 }
