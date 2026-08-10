@@ -73,7 +73,9 @@ private fun wrapConversationRows() {
         "invoke-static {v12}, $RTL_EXTENSION->endDirectionProvider(Ljava/lang/Object;)V",
     )
     method.addInstruction(
-        beginIndex,
+        // The trace-disabled branch joins on the anchor itself. Insert after it
+        // so both traced and normal composition paths open the provider.
+        beginIndex + 1,
         "invoke-static {v12}, $RTL_EXTENSION->beginConversationList(Ljava/lang/Object;)V",
     )
 }
@@ -103,7 +105,8 @@ private fun wrapMessageBubbleContent() {
         "invoke-static {v6}, $RTL_EXTENSION->endDirectionProvider(Ljava/lang/Object;)V",
     )
     method.addInstruction(
-        beginIndex,
+        // Preserve the branch label on the anchor and run on both trace paths.
+        beginIndex + 1,
         "invoke-static {v6}, $RTL_EXTENSION->beginConversationMessages(Ljava/lang/Object;)V",
     )
 }
@@ -132,7 +135,8 @@ private fun wrapMessageMetadata() {
         "invoke-static {v15}, $RTL_EXTENSION->endDirectionProvider(Ljava/lang/Object;)V",
     )
     method.addInstruction(
-        beginIndex,
+        // Preserve the branch label on the anchor and run on both trace paths.
+        beginIndex + 1,
         "invoke-static {v15}, $RTL_EXTENSION->beginConversationMessages(Ljava/lang/Object;)V",
     )
 }
