@@ -30,7 +30,7 @@ val rtlZenSmsLayoutPatch = bytecodePatch(
     }
 }
 
-context(BytecodePatchContext)
+context(_: BytecodePatchContext)
 private fun addSettingsSwitches() {
     val method = RtlAppearanceSettingsFingerprint.method
     val textSizeItemIndex = method.instructions.indexOfLast { instruction ->
@@ -47,7 +47,7 @@ private fun addSettingsSwitches() {
     )
 }
 
-context(BytecodePatchContext)
+context(_: BytecodePatchContext)
 private fun wrapConversationRows() {
     val method = RtlConversationItemFingerprint.method
     val beginIndex = method.instructions.indexOfFirst { instruction ->
@@ -77,7 +77,7 @@ private fun wrapConversationRows() {
     )
 }
 
-context(BytecodePatchContext)
+context(_: BytecodePatchContext)
 private fun wrapMessageBubbleContent() {
     val method = RtlMessageBubbleContentFingerprint.method
     val beginIndex = method.instructions.indexOfFirst { instruction ->
@@ -107,7 +107,7 @@ private fun wrapMessageBubbleContent() {
     )
 }
 
-context(BytecodePatchContext)
+context(_: BytecodePatchContext)
 private fun wrapMessageMetadata() {
     val method = RtlMessageMetadataFingerprint.method
     val beginIndex = method.instructions.indexOfFirst { instruction ->
