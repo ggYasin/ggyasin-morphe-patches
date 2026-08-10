@@ -9,7 +9,6 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
-private const val RTL_EXTENSION = "Lapp/patchlab/extension/rtl/RtlSmsLayout;"
 private const val COMPOSER = "Landroidx/compose/runtime/Composer;"
 
 @Suppress("unused")
@@ -17,10 +16,10 @@ val rtlZenSmsLayoutPatch = bytecodePatch(
     name = "RTL SMS lists",
     description =
         "Adds RTL conversation rows while keeping conversation titles left to right.",
-    default = false,
+    default = true,
 ) {
     compatibleWith(ZEN_SMS_COMPATIBILITY)
-    extendWith("extensions/extension.mpe")
+    dependsOn(sharedZenSmsExtensionPatch())
 
     execute {
         addSettingsSwitches()
@@ -41,7 +40,7 @@ private fun addSettingsSwitches() {
     // v5 is the active Composer at the final item in this exact 1.2.04 lambda.
     method.addInstruction(
         textSizeItemIndex + 1,
-        "invoke-static {v5}, $RTL_EXTENSION->renderSettings(Ljava/lang/Object;)V",
+        "invoke-static {v5}, $RTL_EXTENSION_CLASS->renderSettings(Ljava/lang/Object;)V",
     )
 }
 
@@ -83,11 +82,11 @@ private fun wrapConversationRows() {
     // shift the original anchor indices.
     method.addInstruction(
         endIndex + 1,
-        "invoke-static {v12}, $RTL_EXTENSION->endDirectionProvider(Ljava/lang/Object;)V",
+        "invoke-static {v12}, $RTL_EXTENSION_CLASS->endDirectionProvider(Ljava/lang/Object;)V",
     )
     method.addInstruction(
         titleTextIndex + 1,
-        "invoke-static {v12}, $RTL_EXTENSION->endDirectionProvider(Ljava/lang/Object;)V",
+        "invoke-static {v12}, $RTL_EXTENSION_CLASS->endDirectionProvider(Ljava/lang/Object;)V",
     )
 
     // The row stays RTL, but the title paragraph uses LTR fallback for neutral
@@ -103,7 +102,7 @@ private fun wrapConversationRows() {
     )
     method.addInstruction(
         titleTextIndex,
-        "invoke-static {}, $RTL_EXTENSION->conversationLabelTextAlign()Ljava/lang/Object;",
+        "invoke-static {}, $RTL_EXTENSION_CLASS->conversationLabelTextAlign()Ljava/lang/Object;",
     )
     method.addInstruction(
         titleTextIndex,
@@ -112,17 +111,17 @@ private fun wrapConversationRows() {
     method.addInstruction(
         titleTextIndex,
         "invoke-static/range {v41 .. v41}, " +
-            "$RTL_EXTENSION->conversationLabelDefaultMask(I)I",
+            "$RTL_EXTENSION_CLASS->conversationLabelDefaultMask(I)I",
     )
     method.addInstruction(
         titleTextIndex,
-        "invoke-static {v12}, $RTL_EXTENSION->beginConversationLabel(Ljava/lang/Object;)V",
+        "invoke-static {v12}, $RTL_EXTENSION_CLASS->beginConversationLabel(Ljava/lang/Object;)V",
     )
 
     method.addInstruction(
         // The trace-disabled branch joins on the anchor itself. Insert after it
         // so both traced and normal composition paths open the provider.
         beginIndex + 1,
-        "invoke-static {v12}, $RTL_EXTENSION->beginConversationList(Ljava/lang/Object;)V",
+        "invoke-static {v12}, $RTL_EXTENSION_CLASS->beginConversationList(Ljava/lang/Object;)V",
     )
 }

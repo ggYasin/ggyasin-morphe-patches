@@ -21,3 +21,15 @@ object IsPremiumFingerprint : Fingerprint(
     returnType = "Lz/vF;",
     parameters = emptyList(),
 )
+
+/** Matches ZenSMS' existing body-to-OTP extractor. */
+object ZenSmsOtpExtractorFingerprint : Fingerprint(
+    definingClass = "Lz/Md;",
+    name = "s",
+    returnType = "Ljava/lang/String;",
+    parameters = listOf("Ljava/lang/String;"),
+    custom = { method, _ ->
+        AccessFlags.PUBLIC.isSet(method.accessFlags) &&
+            AccessFlags.STATIC.isSet(method.accessFlags)
+    },
+)

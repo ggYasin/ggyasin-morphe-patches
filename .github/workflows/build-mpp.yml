@@ -26,11 +26,15 @@ jobs:
           java-version: "21"
           cache: gradle
 
-      - name: Build MPP
+      - name: Test and build MPP
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :patches:buildAndroid --no-daemon
+        run: >-
+          ./gradlew
+          :extensions:extension:testDebugUnitTest
+          :patches:generatePatchesList
+          --no-daemon
 
       - name: Show bundle
         run: ls -lh patches/build/libs/*.mpp
@@ -39,6 +43,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: patchlab-zensms-mpp
-          path: patches/build/libs/*.mpp
+          path: |
+            patches/build/libs/*.mpp
+            patches-list.json
           if-no-files-found: error
           retention-days: 14
