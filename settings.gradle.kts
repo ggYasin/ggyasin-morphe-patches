@@ -19,3 +19,7 @@ pluginManagement {
 plugins {
     id("app.morphe.patches") version "1.3.3"
 }
+
+// Compile-only descriptors for the R8-obfuscated callback interfaces used by
+// ZenSMS 1.2.04. This project is never packaged into the extension.
+include(":zensms-stubs")
