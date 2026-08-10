@@ -1,6 +1,7 @@
 package app.template.patches.zensms
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.template.patches.shared.Constants.ZEN_SMS_COMPATIBILITY
 import com.android.tools.smali.dexlib2.Opcode
@@ -29,6 +30,7 @@ val rtlZenSmsLayoutPatch = bytecodePatch(
     }
 }
 
+context(BytecodePatchContext)
 private fun addSettingsSwitches() {
     val method = RtlAppearanceSettingsFingerprint.method
     val textSizeItemIndex = method.instructions.indexOfLast { instruction ->
@@ -45,6 +47,7 @@ private fun addSettingsSwitches() {
     )
 }
 
+context(BytecodePatchContext)
 private fun wrapConversationRows() {
     val method = RtlConversationItemFingerprint.method
     val beginIndex = method.instructions.indexOfFirst { instruction ->
@@ -74,6 +77,7 @@ private fun wrapConversationRows() {
     )
 }
 
+context(BytecodePatchContext)
 private fun wrapMessageBubbleContent() {
     val method = RtlMessageBubbleContentFingerprint.method
     val beginIndex = method.instructions.indexOfFirst { instruction ->
@@ -103,6 +107,7 @@ private fun wrapMessageBubbleContent() {
     )
 }
 
+context(BytecodePatchContext)
 private fun wrapMessageMetadata() {
     val method = RtlMessageMetadataFingerprint.method
     val beginIndex = method.instructions.indexOfFirst { instruction ->
