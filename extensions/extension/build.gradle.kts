@@ -3,7 +3,7 @@ extension {
 }
 
 android {
-    namespace = "app.template.extension"
+    namespace = "app.patchlab.extension"
     // This extension is Java-only. Avoid packaging Kotlin's runtime into the
     // MPE because ZenSMS already supplies its own R8-processed Kotlin runtime.
     enableKotlin = false

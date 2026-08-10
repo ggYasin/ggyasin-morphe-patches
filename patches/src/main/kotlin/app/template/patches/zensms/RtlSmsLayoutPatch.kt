@@ -1,6 +1,7 @@
 package app.template.patches.zensms
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.template.patches.shared.Constants.ZEN_SMS_COMPATIBILITY
