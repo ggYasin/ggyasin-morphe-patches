@@ -6,9 +6,7 @@
       "name": "Expanded OTP detection",
       "description": "Extends ZenSMS's original OTP extractor with universal and Persian patterns.",
       "default": true,
-      "dependencies": [
-        "BytecodePatch"
-      ],
+      "dependencies": [],
       "compatiblePackages": [
         {
           "packageName": "com.zensms.app",
