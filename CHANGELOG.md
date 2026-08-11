@@ -1,3 +1,7 @@
+# 1.2.1
+
+- Fix ZenSMS startup verification by preserving the stock validator's live boolean register when adding the Persian ignore term.
+
 # 1.2.0
 
 - Add an opt-in Offline Games 3.14.1 ARMv7 patch that changes the built-in house-ad countdown from 15 seconds to 1.

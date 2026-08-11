@@ -1,15 +1,23 @@
 package app.template.patches.zensms
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.extensions.newLabel
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.template.patches.shared.Constants.ZEN_SMS_COMPATIBILITY
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11x
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21c
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21t
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction35c
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringReference
 
 private const val STOCK_CODE_BEFORE_CONTEXT =
     "(?i)\\b(\\d{4,8})\\s+is\\s+your\\s+(?:otp|code|pin|verification)\\b"
@@ -101,18 +109,51 @@ private fun extendStockContextIgnoreList() {
     }
     check(lastStockIgnoreIndex >= 0) { "Could not find ZenSMS's contextual ignore list" }
 
-    val arrayIndex = instructions.withIndex().firstOrNull { (index, instruction) ->
-        index > lastStockIgnoreIndex && instruction.opcode == Opcode.FILLED_NEW_ARRAY_RANGE
+    val insertionIndex = instructions.withIndex().firstOrNull { (index, instruction) ->
+        if (index <= lastStockIgnoreIndex) return@firstOrNull false
+        val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference
+        reference?.definingClass == "Lkotlin/text/c;" && reference.name == "e0"
     }?.index ?: -1
-    check(arrayIndex >= 0) { "Could not find ZenSMS's contextual ignore array" }
+    check(insertionIndex >= 0) { "Could not find the end of ZenSMS's contextual ignore check" }
 
-    // v9 is dead at this point in the stock validator. Prepending one element
-    // preserves all original terms and avoids adding a handler or method call.
-    method.replaceInstruction(
-        arrayIndex,
-        "filled-new-array/range {v9 .. v24}, [Ljava/lang/String;",
+    val rejectIndex = instructions.indexOfLast { instruction ->
+        instruction.opcode == Opcode.RETURN &&
+            (instruction as? OneRegisterInstruction)?.registerA == 6
+    }
+    check(rejectIndex >= 0) { "Could not find ZenSMS's rejected-candidate return" }
+
+    val rejectLabel = method.newLabel(rejectIndex)
+    val containsReference = ImmutableMethodReference(
+        "Lkotlin/text/c;",
+        "e",
+        listOf("Ljava/lang/CharSequence;", "Ljava/lang/CharSequence;", "Z"),
+        "Z",
     )
-    method.addInstruction(arrayIndex, "const-string v9, \"$PERSIAN_DISCOUNT_TERM\"")
+
+    // v1 is overwritten by the original instruction at insertionIndex. Keep
+    // v9 untouched: it remains the stock method's successful boolean result.
+    method.addInstructions(
+        insertionIndex,
+        listOf(
+            BuilderInstruction21c(
+                Opcode.CONST_STRING,
+                1,
+                ImmutableStringReference(PERSIAN_DISCOUNT_TERM),
+            ),
+            BuilderInstruction35c(
+                Opcode.INVOKE_STATIC,
+                3,
+                2,
+                1,
+                6,
+                0,
+                0,
+                containsReference,
+            ),
+            BuilderInstruction11x(Opcode.MOVE_RESULT, 1),
+            BuilderInstruction21t(Opcode.IF_NEZ, 1, rejectLabel),
+        ),
+    )
 }
 
 private fun String.toSmaliString() = buildString(length) {
