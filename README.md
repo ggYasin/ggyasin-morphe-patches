@@ -1,12 +1,18 @@
 # ggyasin-morphe-patches
 
-Local [Morphe](https://github.com/MorpheApp) patches for ZenSMS.
+Local [Morphe](https://github.com/MorpheApp) patches for Android apps.
 
 ## Compatibility
 
 - App: ZenSMS
 - Package: `com.zensms.app`
 - Version: `1.2.04` (`141`)
+- Input format: XAPK
+
+- App: Offline Games
+- Package: `com.JindoBlu.OfflineGames`
+- Version: `3.14.1` (`3204`)
+- Architecture: `armeabi-v7a`
 - Input format: XAPK
 
 ## Patches
@@ -36,7 +42,19 @@ Adds one switch at the bottom of **Settings → Appearance**:
 The patch is selected by default. Its in-app switch defaults to off and stores
 its state in app-private local preferences.
 
-All three patches are selected by default when the bundle is loaded.
+### One-second house-ad countdown
+
+Changes Offline Games' built-in cross-promotion fallback from 15 seconds to
+one second. This is the game's own house ad shown when a rewarded ad cannot be
+loaded, not a third-party ad-provider timer.
+
+The patch is disabled by default and supports only Offline Games `3.14.1`
+(`3204`) for ARMv7. It verifies the exact `libil2cpp.so` size, SHA-256, unique
+ARM instruction signature, offset, and patched result before writing the four
+bytes that encode the countdown. Any unexpected binary is rejected unchanged.
+
+The three ZenSMS patches are selected by default. The Offline Games patch is
+opt-in.
 
 ## Build
 

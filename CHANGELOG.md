@@ -1,3 +1,8 @@
+# 1.2.0
+
+- Add an opt-in Offline Games 3.14.1 ARMv7 patch that changes the built-in house-ad countdown from 15 seconds to 1.
+- Verify the exact native library and instruction signature before modifying `libil2cpp.so`.
+
 # 1.1.2
 
 - Restore ZenSMS's original OTP handler and remove the custom runtime extractor.

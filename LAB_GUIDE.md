@@ -48,3 +48,14 @@ rebuilding the patch bundle.
 The patched APK set is signed with Morphe's configured key. It cannot update an
 official ZenSMS installation signed by the publisher unless that installation
 is removed first. Removing an installed app deletes its local application data.
+
+## Patch Offline Games 3.14.1
+
+1. Select `offline_games.xapk` as the original app bundle.
+2. In Expert mode, enable **One-second house-ad countdown**.
+3. Patch and save the output.
+4. Test while completely offline, when the game falls back to its own
+   cross-promotion popup.
+
+The patch requires the exact ARMv7 `3.14.1` (`3204`) XAPK and fails without
+modifying the library when its verified native signature does not match.
