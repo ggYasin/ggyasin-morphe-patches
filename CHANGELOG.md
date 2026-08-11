@@ -1,3 +1,7 @@
+# 1.2.2
+
+- Fix ZenSMS SMS reception by removing the unsupported Java `UNICODE_CHARACTER_CLASS` regex flag; Android boundaries are already Unicode-aware.
+
 # 1.2.1
 
 - Fix ZenSMS startup verification by preserving the stock validator's live boolean register when adding the Persian ignore term.

@@ -29,6 +29,9 @@ Three stock regex slots gain universal one-time-password wording plus Persian
 The stock candidate validator remains in control, with a maximum length of ten
 characters and `تخفیف` added to its nearby-context ignore terms.
 
+The patterns avoid Java's unsupported `UNICODE_CHARACTER_CLASS` flag and use
+explicit Persian/Arabic character boundaries where needed.
+
 The patch has no OTP runtime extension, custom handler, configuration option,
 or whole-message interception. Its Persian ignore check uses a temporary
 register that the original validator immediately overwrites, preserving the

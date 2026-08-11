@@ -25,21 +25,21 @@ private const val EXPANDED_CODE_BEFORE_CONTEXT =
     "(?i)(?<![A-Z0-9\\u0660-\\u0669\\u06F0-\\u06F9])" +
         "([A-Z0-9\\u0660-\\u0669\\u06F0-\\u06F9]{4,10})\\s+" +
         "(?:is\\s+)?(?:(?:your|the)\\s+)?" +
-        "(?:otp|code|pin|verification|one[-\\s]time[-\\s]password|2fa)(?U:\\b)"
+        "(?:otp|code|pin|verification|one[-\\s]time[-\\s]password|2fa)\\b"
 
 private const val STOCK_PIN_CONTEXT =
     "(?i)\\bPIN\\s*(?:is|:)\\s*(\\d{4,6})\\b"
 private const val EXPANDED_PIN_AND_PERSIAN_CONTEXT =
-    "(?i)(?U:\\b)(?:PIN|کد|رمز)(?:\\s+پویا)?\\s*" +
+    "(?i)(?<![A-Z0-9\\u0600-\\u06FF])(?:PIN|کد|رمز)(?:\\s+پویا)?\\s*" +
         "(?:is|:|：)?\\s*([A-Z0-9\\u0660-\\u0669\\u06F0-\\u06F9]{4,10})" +
-        "(?U:\\b)"
+        "(?![A-Z0-9\\u0660-\\u0669\\u06F0-\\u06F9])"
 
 private const val STOCK_PASSWORD_CONTEXT =
     "(?i)\\b(?:passcode|password)\\s*(?:is|:)\\s*(\\d{4,8})\\b"
 private const val EXPANDED_PASSWORD_CONTEXT =
-    "(?i)(?U:\\b)(?:passcode|password|one[-\\s]time[-\\s]password)\\s*" +
+    "(?i)\\b(?:passcode|password|one[-\\s]time[-\\s]password)\\s*" +
         "(?:is|:|：)?\\s*([A-Z0-9\\u0660-\\u0669\\u06F0-\\u06F9]{4,10})" +
-        "(?U:\\b)"
+        "(?![A-Z0-9\\u0660-\\u0669\\u06F0-\\u06F9])"
 
 private const val EXPANDED_MAX_CODE_LENGTH = 10
 private const val PERSIAN_DISCOUNT_TERM = "تخفیف"
