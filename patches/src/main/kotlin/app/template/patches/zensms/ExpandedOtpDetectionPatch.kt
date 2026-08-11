@@ -1,170 +1,118 @@
 package app.template.patches.zensms
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
-import app.morphe.patcher.extensions.newLabel
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.patch.stringsOption
 import app.template.patches.shared.Constants.ZEN_SMS_COMPATIBILITY
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11n
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11x
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21t
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction3rc
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
-import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
-import java.util.regex.Pattern
-import java.util.regex.PatternSyntaxException
 
-private const val SENSITIVE_MARKER = "__PATCHLAB_ADDITIONAL_SENSITIVE_PHRASES__"
-private const val IGNORED_MARKER = "__PATCHLAB_ADDITIONAL_IGNORED_PHRASES__"
+private const val STOCK_CODE_BEFORE_CONTEXT =
+    "(?i)\\b(\\d{4,8})\\s+is\\s+your\\s+(?:otp|code|pin|verification)\\b"
+private const val EXPANDED_CODE_BEFORE_CONTEXT =
+    "(?i)(?<![A-Z0-9\\u0660-\\u0669\\u06F0-\\u06F9])" +
+        "([A-Z0-9\\u0660-\\u0669\\u06F0-\\u06F9]{4,10})\\s+" +
+        "(?:is\\s+)?(?:(?:your|the)\\s+)?" +
+        "(?:otp|code|pin|verification|one[-\\s]time[-\\s]password|2fa)(?U:\\b)"
+
+private const val STOCK_PIN_CONTEXT =
+    "(?i)\\bPIN\\s*(?:is|:)\\s*(\\d{4,6})\\b"
+private const val EXPANDED_PIN_AND_PERSIAN_CONTEXT =
+    "(?i)(?U:\\b)(?:PIN|کد|رمز)(?:\\s+پویا)?\\s*" +
+        "(?:is|:|：)?\\s*([A-Z0-9\\u0660-\\u0669\\u06F0-\\u06F9]{4,10})" +
+        "(?U:\\b)"
+
+private const val STOCK_PASSWORD_CONTEXT =
+    "(?i)\\b(?:passcode|password)\\s*(?:is|:)\\s*(\\d{4,8})\\b"
+private const val EXPANDED_PASSWORD_CONTEXT =
+    "(?i)(?U:\\b)(?:passcode|password|one[-\\s]time[-\\s]password)\\s*" +
+        "(?:is|:|：)?\\s*([A-Z0-9\\u0660-\\u0669\\u06F0-\\u06F9]{4,10})" +
+        "(?U:\\b)"
+
+private const val EXPANDED_MAX_CODE_LENGTH = 10
+private const val PERSIAN_DISCOUNT_TERM = "تخفیف"
+
+private val REGEX_REPLACEMENTS = mapOf(
+    STOCK_CODE_BEFORE_CONTEXT to EXPANDED_CODE_BEFORE_CONTEXT,
+    STOCK_PIN_CONTEXT to EXPANDED_PIN_AND_PERSIAN_CONTEXT,
+    STOCK_PASSWORD_CONTEXT to EXPANDED_PASSWORD_CONTEXT,
+)
 
 @Suppress("unused")
 val expandedOtpDetectionPatch = bytecodePatch(
     name = "Expanded OTP detection",
-    description = "Uses OTPHelper-compatible detection first, then falls back to ZenSMS.",
+    description = "Extends ZenSMS's original OTP extractor with universal and Persian patterns.",
     default = true,
 ) {
     compatibleWith(ZEN_SMS_COMPATIBILITY)
-    dependsOn(sharedZenSmsExtensionPatch())
-
-    val additionalSensitivePhrases by stringsOption(
-        key = "additionalSensitivePhrases",
-        default = emptyList(),
-        title = "Additional OTP phrases",
-        description = "Regex fragments that identify OTP context. Applied when repatching.",
-        validator = { phrases -> phrases.isValidRegexList(disallowCapturingGroups = true) },
-    )
-    val additionalIgnoredPhrases by stringsOption(
-        key = "additionalIgnoredPhrases",
-        default = emptyList(),
-        title = "Additional ignored phrases",
-        description = "Regex fragments that suppress OTP detection. Applied when repatching.",
-        validator = { phrases -> phrases.isValidRegexList(disallowCapturingGroups = false) },
-    )
 
     execute {
-        replaceExtensionPhrases(
-            methodName = "additionalSensitivePhrases",
-            marker = SENSITIVE_MARKER,
-            phrases = additionalSensitivePhrases.orEmpty(),
-        )
-        replaceExtensionPhrases(
-            methodName = "additionalIgnoredPhrases",
-            marker = IGNORED_MARKER,
-            phrases = additionalIgnoredPhrases.orEmpty(),
-        )
-        hookZenSmsExtractor()
+        expandStockRegexes()
+        widenStockValidatorLength()
+        extendStockContextIgnoreList()
     }
 }
 
-private fun List<String>?.isValidRegexList(disallowCapturingGroups: Boolean): Boolean {
-    if (this == null) return true
+context(_: BytecodePatchContext)
+private fun expandStockRegexes() {
+    val method = ZenSmsOtpExtractorFingerprint.method
+    val found = mutableSetOf<String>()
 
-    return all { phrase ->
-        if (phrase.isBlank() || '\n' in phrase || '\r' in phrase) {
-            return@all false
-        }
-        try {
-            val compiled = Pattern.compile("(?:$phrase)")
-            !disallowCapturingGroups || compiled.matcher("").groupCount() == 0
-        } catch (_: PatternSyntaxException) {
-            false
-        }
-    }
-}
-
-context(context: BytecodePatchContext)
-private fun replaceExtensionPhrases(
-    methodName: String,
-    marker: String,
-    phrases: List<String>,
-) {
-    val extensionClass = context.mutableClassDefBy(OTP_EXTENSION_CLASS)
-    val method = extensionClass.methods.single { candidate ->
-        candidate.name == methodName &&
-            candidate.parameterTypes.isEmpty() &&
-            candidate.returnType == "Ljava/lang/String;"
-    }
-    val markerIndex = method.instructions.indexOfFirst { instruction ->
+    method.instructions.forEachIndexed { index, instruction ->
         val reference = (instruction as? ReferenceInstruction)?.reference as? StringReference
-        reference?.string == marker
+            ?: return@forEachIndexed
+        val replacement = REGEX_REPLACEMENTS[reference.string] ?: return@forEachIndexed
+        val register = (instruction as OneRegisterInstruction).registerA
+        method.replaceInstruction(index, "const-string v$register, \"${replacement.toSmaliString()}\"")
+        found += reference.string
     }
-    check(markerIndex >= 0) { "Could not find OTP extension marker for $methodName" }
 
-    val register = (method.instructions[markerIndex] as OneRegisterInstruction).registerA
+    check(found == REGEX_REPLACEMENTS.keys) {
+        "Expected ${REGEX_REPLACEMENTS.size} stock OTP regexes, found ${found.size}"
+    }
+}
+
+context(_: BytecodePatchContext)
+private fun widenStockValidatorLength() {
+    val method = ZenSmsOtpCandidateValidatorFingerprint.method
+    val maxLengthIndex = method.instructions.indexOfFirst { instruction ->
+        instruction.opcode == Opcode.CONST_16 &&
+            (instruction as? OneRegisterInstruction)?.registerA == 8
+    }
+    check(maxLengthIndex >= 0) { "Could not find ZenSMS's maximum OTP length" }
+
     method.replaceInstruction(
-        markerIndex,
-        "const-string v$register, \"${phrases.joinToString("\n").toSmaliString()}\"",
+        maxLengthIndex,
+        "const/16 v8, 0x${EXPANDED_MAX_CODE_LENGTH.toString(16)}",
     )
 }
 
 context(_: BytecodePatchContext)
-private fun hookZenSmsExtractor() {
-    val method = ZenSmsOtpExtractorFingerprint.method
-    val implementation = checkNotNull(method.implementation) {
-        "ZenSMS OTP extractor has no implementation"
+private fun extendStockContextIgnoreList() {
+    val method = ZenSmsOtpCandidateValidatorFingerprint.method
+    val instructions = method.instructions
+    val lastStockIgnoreIndex = instructions.indexOfFirst { instruction ->
+        val reference = (instruction as? ReferenceInstruction)?.reference as? StringReference
+        reference?.string == "no."
     }
-    val parameterWidth = method.parameters.sumOf { parameter ->
-        if (parameter.type == "J" || parameter.type == "D") 2 else 1
-    }
-    check(implementation.registerCount - parameterWidth >= 1) {
-        "ZenSMS OTP extractor has no local register for the guard"
-    }
+    check(lastStockIgnoreIndex >= 0) { "Could not find ZenSMS's contextual ignore list" }
 
-    val bodyRegister = implementation.registerCount - parameterWidth
-    val shouldIgnoreReference = ImmutableMethodReference(
-        OTP_EXTENSION_CLASS,
-        "shouldIgnore",
-        listOf("Ljava/lang/String;"),
-        "Z",
-    )
-    val extractReference = ImmutableMethodReference(
-        OTP_EXTENSION_CLASS,
-        "extract",
-        listOf("Ljava/lang/String;"),
-        "Ljava/lang/String;",
-    )
+    val arrayIndex = instructions.withIndex().firstOrNull { (index, instruction) ->
+        index > lastStockIgnoreIndex && instruction.opcode == Opcode.FILLED_NEW_ARRAY_RANGE
+    }?.index ?: -1
+    check(arrayIndex >= 0) { "Could not find ZenSMS's contextual ignore array" }
 
-    // Build the branches directly instead of using Morphe's inline-smali
-    // compiler. Its synthetic method always returns void, which can discard a
-    // block containing return-object and produce "Collection is empty".
-    val stockExtractorLabel = method.newLabel(0)
-    implementation.addInstructions(
-        0,
-        listOf(
-            BuilderInstruction3rc(
-                Opcode.INVOKE_STATIC_RANGE,
-                bodyRegister,
-                1,
-                extractReference,
-            ),
-            BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, 0),
-            BuilderInstruction21t(Opcode.IF_EQZ, 0, stockExtractorLabel),
-            BuilderInstruction11x(Opcode.RETURN_OBJECT, 0),
-        ),
+    // v9 is dead at this point in the stock validator. Prepending one element
+    // preserves all original terms and avoids adding a handler or method call.
+    method.replaceInstruction(
+        arrayIndex,
+        "filled-new-array/range {v9 .. v24}, [Ljava/lang/String;",
     )
-
-    val tryExtractLabel = method.newLabel(0)
-    implementation.addInstructions(
-        0,
-        listOf(
-            BuilderInstruction3rc(
-                Opcode.INVOKE_STATIC_RANGE,
-                bodyRegister,
-                1,
-                shouldIgnoreReference,
-            ),
-            BuilderInstruction11x(Opcode.MOVE_RESULT, 0),
-            BuilderInstruction21t(Opcode.IF_EQZ, 0, tryExtractLabel),
-            BuilderInstruction11n(Opcode.CONST_4, 0, 0),
-            BuilderInstruction11x(Opcode.RETURN_OBJECT, 0),
-        ),
-    )
+    method.addInstruction(arrayIndex, "const-string v9, \"$PERSIAN_DISCOUNT_TERM\"")
 }
 
 private fun String.toSmaliString() = buildString(length) {

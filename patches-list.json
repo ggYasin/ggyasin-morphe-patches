@@ -1,10 +1,10 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "patches": [
     {
       "name": "Expanded OTP detection",
-      "description": "Uses OTPHelper-compatible detection first, then falls back to ZenSMS.",
+      "description": "Extends ZenSMS's original OTP extractor with universal and Persian patterns.",
       "default": true,
       "dependencies": [
         "BytecodePatch"
@@ -33,26 +33,7 @@
           ]
         }
       ],
-      "options": [
-        {
-          "key": "additionalSensitivePhrases",
-          "title": "Additional OTP phrases",
-          "description": "Regex fragments that identify OTP context. Applied when repatching.",
-          "required": false,
-          "type": "kotlin.collections.List<kotlin.String>",
-          "default": [],
-          "values": null
-        },
-        {
-          "key": "additionalIgnoredPhrases",
-          "title": "Additional ignored phrases",
-          "description": "Regex fragments that suppress OTP detection. Applied when repatching.",
-          "required": false,
-          "type": "kotlin.collections.List<kotlin.String>",
-          "default": [],
-          "values": null
-        }
-      ]
+      "options": []
     },
     {
       "name": "RTL SMS lists",

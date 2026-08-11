@@ -4,14 +4,12 @@ import app.morphe.patcher.patch.bytecodePatch
 
 const val ZEN_SMS_EXTENSION = "extensions/extension.mpe"
 const val RTL_EXTENSION_CLASS = "Lapp/patchlab/extension/rtl/RtlSmsLayout;"
-const val OTP_EXTENSION_CLASS = "Lapp/patchlab/extension/otp/OtpExtractor;"
 
 private val sharedZenSmsExtensionPatchInstance = bytecodePatch(default = false) {
     extendWith(ZEN_SMS_EXTENSION)
 
     execute {
         classDefBy(RTL_EXTENSION_CLASS)
-        classDefBy(OTP_EXTENSION_CLASS)
     }
 }
 

@@ -14,7 +14,4 @@ dependencies {
     // the callback classes. The real definition is supplied by the target APK.
     compileOnly(project(":zensms-stubs"))
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
-
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.yaml:snakeyaml:2.3")
 }

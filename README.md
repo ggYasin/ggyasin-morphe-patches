@@ -17,25 +17,14 @@ Makes ZenSMS's synchronous and reactive premium-state checks report enabled.
 
 ### Expanded OTP detection
 
-Improves the OTP bubble with a body-only, OTPHelper-compatible detector. The
-decision order is:
+Keeps ZenSMS's original OTP handler and extends only its existing extractor.
+Three stock regex slots gain universal one-time-password wording plus Persian
+`کد`, `رمز`, and `رمز پویا` contexts, including Persian and Arabic-Indic digits.
+The stock candidate validator remains in control, with a maximum length of ten
+characters and `تخفیف` added to its nearby-context ignore terms.
 
-1. Messages matching an ignored phrase do not show an OTP bubble.
-2. OTPHelper-compatible detection wins when it finds a code.
-3. Otherwise ZenSMS's original detector runs unchanged as the fallback.
-
-The detector recognizes numeric and alphanumeric codes of four or more
-characters, including spaced or hyphenated codes and Arabic-Indic or Persian
-digits. Its keyword, cleanup, currency, skip, and ignore rules are built into
-the patch and require no app setting or background initialization.
-
-Morphe Expert mode exposes two optional patch-time regex lists:
-
-- **Additional OTP phrases** extends the contexts that can introduce a code.
-- **Additional ignored phrases** suppresses known false positives.
-
-The lists are validated and embedded while patching. Changing either one
-requires producing and installing a newly patched app.
+The patch has no OTP runtime extension, custom handler, configuration option,
+or whole-message interception.
 
 ### RTL SMS lists
 

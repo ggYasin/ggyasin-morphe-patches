@@ -33,3 +33,13 @@ object ZenSmsOtpExtractorFingerprint : Fingerprint(
             AccessFlags.STATIC.isSet(method.accessFlags)
     },
 )
+
+/** Matches ZenSMS' existing per-candidate OTP validator. */
+object ZenSmsOtpCandidateValidatorFingerprint : Fingerprint(
+    definingClass = "Lz/Md;",
+    name = "C",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "Z",
+    parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Lz/an;"),
+    strings = listOf("order", "tracking", "transaction", "invoice", "no."),
+)

@@ -34,20 +34,16 @@ Manager as the app to handle it.
 3. Choose `ZenSMS_1.2.04.xapk` when prompted for the original app bundle.
 4. Enable the patches you want to test:
    - **Enable premium state** changes the existing premium-state checks.
-   - **Expanded OTP detection** checks hard-ignore rules, prefers the
-     OTPHelper-compatible result, and uses ZenSMS's original result only when
-     the expanded detector finds nothing.
+   - **Expanded OTP detection** keeps ZenSMS's original handler and adds
+     universal and Persian patterns directly to its stock extractor.
    - **RTL SMS lists** adds a conversation-list switch under
      **Settings → Appearance**. It mirrors the rows while keeping contact
      names and phone numbers left to right and right-aligned.
-5. Optionally open **Expanded OTP detection** patch options and add regex
-   fragments under **Additional OTP phrases** or **Additional ignored
-   phrases**. Invalid regexes are rejected before patching.
-6. Patch and save the output.
-7. Install only on an emulator or disposable test device.
+5. Patch and save the output.
+6. Install only on an emulator or disposable test device.
 
-OTP rules are embedded in the output. There is no OTP configuration inside
-ZenSMS, and changing patch options requires repatching the original XAPK.
+OTP rules are embedded in the patch. Changing them requires updating and
+rebuilding the patch bundle.
 
 The patched APK set is signed with Morphe's configured key. It cannot update an
 official ZenSMS installation signed by the publisher unless that installation

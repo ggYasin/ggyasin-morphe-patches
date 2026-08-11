@@ -1,3 +1,9 @@
+# 1.1.2
+
+- Restore ZenSMS's original OTP handler and remove the custom runtime extractor.
+- Add only universal and Persian OTP patterns directly to the stock extractor.
+- Preserve the stock candidate validator and extend its nearby-context ignore terms with `تخفیف`.
+
 # 1.1.1
 
 - Fix on-device OTP hook application by emitting branch instructions directly.
