@@ -1,4 +1,4 @@
-rootProject.name = "zensms-patches"
+rootProject.name = "ggyasin-morphe-patches"
 
 pluginManagement {
     repositories {

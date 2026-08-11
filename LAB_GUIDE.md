@@ -1,4 +1,4 @@
-# PatchLab ZenSMS build and import
+# ggyasin-morphe-patches build and import
 
 This repository builds one local Morphe patch bundle containing the ZenSMS
 patches documented in the README. Versioned bundles are also published as
@@ -12,7 +12,7 @@ with Morphe.
 3. Select **Build MPP**.
 4. Select **Run workflow**.
 5. Open the completed workflow run.
-6. Download the `patchlab-zensms-mpp` artifact.
+6. Download the `ggyasin-morphe-patches` artifact.
 7. Extract the downloaded ZIP to obtain the `.mpp` file.
 
 ## Import the local bundle into Morphe Manager

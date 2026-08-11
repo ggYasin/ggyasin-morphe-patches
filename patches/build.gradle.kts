@@ -2,12 +2,12 @@ group = "app.patchlab"
 
 patches {
     about {
-        name = "PatchLab ZenSMS Patches"
-        description = "Local laboratory patches for ZenSMS"
-        source = "local"
-        author = "PatchLab"
-        contact = "na"
-        website = "na"
+        name = "ggyasin-morphe-patches"
+        description = "Morphe patches maintained by ggYasin"
+        source = "https://github.com/ggYasin/ggyasin-morphe-patches"
+        author = "ggYasin"
+        contact = "https://github.com/ggYasin"
+        website = "https://github.com/ggYasin/ggyasin-morphe-patches"
         license = "GPLv3"
     }
 }

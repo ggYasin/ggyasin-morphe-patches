@@ -1,4 +1,4 @@
-# PatchLab ZenSMS Patches
+# ggyasin-morphe-patches
 
 Local [Morphe](https://github.com/MorpheApp) patches for ZenSMS.
 

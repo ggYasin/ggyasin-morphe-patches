@@ -42,7 +42,7 @@ jobs:
       - name: Upload MPP artifact
         uses: actions/upload-artifact@v7
         with:
-          name: patchlab-zensms-mpp
+          name: ggyasin-morphe-patches
           path: |
             patches/build/libs/*.mpp
             patches-list.json
