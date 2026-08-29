@@ -1,3 +1,8 @@
+# 1.2.4
+
+- Make each of the three expanded OTP regexes reject messages containing `تخفیف` anywhere in the SMS body.
+- Remove the separate nearby-context validator injection while preserving ZenSMS's stock handler and validator.
+
 # 1.2.2
 
 - Fix ZenSMS SMS reception by removing the unsupported Java `UNICODE_CHARACTER_CLASS` regex flag; Android boundaries are already Unicode-aware.

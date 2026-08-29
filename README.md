@@ -27,15 +27,15 @@ Keeps ZenSMS's original OTP handler and extends only its existing extractor.
 Three stock regex slots gain universal one-time-password wording plus Persian
 `کد`, `رمز`, and `رمز پویا` contexts, including Persian and Arabic-Indic digits.
 The stock candidate validator remains in control, with a maximum length of ten
-characters and `تخفیف` added to its nearby-context ignore terms.
+characters. Each expanded regex rejects its match when `تخفیف` occurs anywhere
+in the SMS body. ZenSMS's other stock regex and fallback paths are unchanged.
 
 The patterns avoid Java's unsupported `UNICODE_CHARACTER_CLASS` flag and use
 explicit Persian/Arabic character boundaries where needed.
 
 The patch has no OTP runtime extension, custom handler, configuration option,
-or whole-message interception. Its Persian ignore check uses a temporary
-register that the original validator immediately overwrites, preserving the
-stock boolean result register and Android bytecode-verifier correctness.
+or injected validator instructions. It changes three existing regex constants
+and the stock validator's maximum-length constant.
 
 ### RTL SMS lists
 
