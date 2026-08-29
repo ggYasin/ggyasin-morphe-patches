@@ -1,9 +1,3 @@
-# 1.2.3
-
-- Detect Persian login phrases where descriptive text appears between `کد` or `رمز` and the OTP.
-- Ignore Persian promotional and wrong-code messages containing `تخفیف` or `اشتباه وارد شده` in the Persian regex path.
-- Remove the injected ZenSMS validator instructions; OTP handling remains entirely in the stock extractor.
-
 # 1.2.2
 
 - Fix ZenSMS SMS reception by removing the unsupported Java `UNICODE_CHARACTER_CLASS` regex flag; Android boundaries are already Unicode-aware.
