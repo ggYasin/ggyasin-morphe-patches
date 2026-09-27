@@ -1,3 +1,9 @@
+## [1.5.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.4.2...v1.5.0-dev.1) (2026-09-27)
+
+### ✨ New Features
+
+* skip Offline Games startup network waits ([a7e95aa](https://github.com/ggYasin/ggyasin-morphe-patches/commit/a7e95aa11037b4049a9d24a210f86b87db797bf0))
+
 ## [1.4.2](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.4.1...v1.4.2) (2026-09-27)
 
 ### 🐛 Bug Fixes

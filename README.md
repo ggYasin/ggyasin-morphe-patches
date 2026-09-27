@@ -33,7 +33,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.4.2](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.4.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;8 patches total
+> **[v1.5.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.5.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
 <details open>
 <summary>📦 9GAG&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -68,7 +68,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 </details>
 
 <details open>
-<summary>📦 Offline Games&nbsp;&nbsp;•&nbsp;&nbsp;3 patches</summary>
+<summary>📦 Offline Games&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -78,6 +78,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
+| [Fast Offline Games startup](#fast-offline-games-startup) | Stops the loading screen waiting for Firebase/Remote Config and country lookup, and initializes ads in the background. Network requests may continue after startup. |  |
 | [In-house ad not clickable](#in-house-ad-not-clickable) | Stops the in-house ad from opening the Play Store when tapped, so an accidental click does not leave the game. The ad and its close button are otherwise unchanged. |  |
 | [In-house ad only](#in-house-ad-only) | Stops Offline Games from requesting rewarded ads, so the game always falls back to its own in-house ad. Banners and interstitials are untouched. |  |
 | [Instant in-house ad close](#instant-in-house-ad-close) | Shows the house-ad close button on opening, hides the countdown, and initializes its counter as complete. Loads patched native code for mounted installs. |  |
@@ -136,18 +137,31 @@ popup across the collection.
 Makes the verified `HouseAdPopupView.OpenStorePage()` handler return immediately.
 The close handler remains functional.
 
-All three Offline Games patches are opt-in, and all support only `3.14.1`
+### Fast Offline Games startup
+
+Stops the loading screen waiting for Firebase/Remote Config around the 35–40%
+stage and for a pending country lookup. Advertising initialization uses the
+game's existing parallel path. Requests can continue in the background; this
+does not disable the game's internet access. Cached/default configuration and
+normal consent handling remain available. See the [startup analysis](docs/offlinegames-startup.md).
+
+All four Offline Games patches are opt-in, and all support only `3.14.1`
 (`3204`) for ARMv7, from either the XAPK or APKS. A normalized whole-library
 SHA-256 check accepts original and known previously patched inputs, while
 rejecting unknown changes. Obsolete edits from earlier releases are restored.
 
-**Mounted installations:** all three depend on a shared Unity native loader fix.
+**Mounted installations:** all four depend on a shared Unity native loader fix.
 Unity normally loads Android's extracted original libraries, which mounting only
 the base APK does not update. The fix extracts and verifies the Unity libraries
 from the mounted APK into an app-private, content-addressed directory and points
 Unity there. First launch requires roughly 88 MB extra storage. Repatch and
 replace the mount after updating the source; a source update alone cannot change
 the running game. See [native-loading investigation and device checks](docs/offlinegames-native-loading.md).
+
+A startup toast now reports whether the expected `libil2cpp.so` is actually mapped
+after Unity loads. Please include that message and the exported patched APK when
+reporting unchanged behavior. File preparation alone does not prove that the
+game loaded those files. The prior ad behavior failure remains under investigation.
 
 The three ZenSMS patches are selected by default. The Offline Games patches are
 opt-in.

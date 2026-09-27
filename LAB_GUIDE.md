@@ -52,7 +52,8 @@ is removed first. Removing an installed app deletes its local application data.
 ## Patch Offline Games 3.14.1
 
 1. Select `offline_games.xapk` or `Offline_Games_3.14.1.apks` as the original app
-   bundle. Both carry the same `libil2cpp.so`.
+   bundle. The supplied APKS contains an old-patched base copy and a stock ARM
+   split copy; the verifier accepts known prior edits and checks the merged result.
 2. In Expert mode, explicitly select the Offline Games patches you want:
    - **In-house ad only** stops the game from requesting rewarded ads, so its
      own cross-promotion is used every time.
@@ -60,6 +61,8 @@ is removed first. Removing an installed app deletes its local application data.
      opens, hides the countdown wrapper and sets the counter to zero.
    - **In-house ad not clickable** stops a tap on the in-house ad from opening
      the Play Store.
+   - **Fast Offline Games startup** stops startup waiting for Firebase/Remote
+     Config and country lookup, and initializes ads in the background.
 3. Patch and save the output.
 4. For root/mount use, replace the existing mount with this newly patched output,
    force-stop the game and start it again. The shared native-loader dependency
@@ -72,11 +75,15 @@ is removed first. Removing an installed app deletes its local application data.
    straight away. With **In-house ad not clickable** enabled, tapping the ad
    itself should do nothing.
 
-All three patches require the exact ARMv7 `3.14.1` (`3204`) library. Known earlier
+All four patches require the exact ARMv7 `3.14.1` (`3204`) library. Known earlier
 edits are accepted and obsolete ones repaired; unknown changes are rejected.
-A `PatchLabOfflineGames` logcat message identifies the verified library path.
+A startup toast and `PatchLabOfflineGames` logcat message now verify the actual
+mapped library **after** Unity loads. Note whether it says patched code loaded
+or native code NOT verified. An absent message is also useful evidence.
 If the countdown still runs, capture that log and the process's `libil2cpp.so`
 mapping using the commands in [the native-loading guide](docs/offlinegames-native-loading.md).
+For startup testing, compare warm launches offline, online, and online with the
+app blocked by the firewall, as described in [the startup guide](docs/offlinegames-startup.md).
 
 ## Patch 9GAG 8.23.0
 
