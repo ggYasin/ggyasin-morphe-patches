@@ -33,7 +33,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.4.1](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.4.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;8 patches total
+> **[v1.4.2-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.4.2-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;8 patches total
 <details open>
 <summary>📦 9GAG&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -80,7 +80,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 |----------|----------------|-----------|
 | [In-house ad not clickable](#in-house-ad-not-clickable) | Stops the in-house ad from opening the Play Store when tapped, so an accidental click does not leave the game. The ad and its close button are otherwise unchanged. |  |
 | [In-house ad only](#in-house-ad-only) | Stops Offline Games from requesting rewarded ads, so the game always falls back to its own in-house ad. Banners and interstitials are untouched. |  |
-| [Instant in-house ad close](#instant-in-house-ad-close) | Removes the in-house ad countdown so its close button is usable straight away. Applies three independent bypasses of the wait: skipping the loop, subtracting the whole counter each tick, and shortening the tick. Also shortens the in-house ad timer to one second. |  |
+| [Instant in-house ad close](#instant-in-house-ad-close) | Shows the house-ad close button on opening, hides the countdown, and initializes its counter as complete. Loads patched native code for mounted installs. |  |
 
 </details>
 
