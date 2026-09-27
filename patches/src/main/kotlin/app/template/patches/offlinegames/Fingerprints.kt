@@ -136,37 +136,6 @@ internal val rewardedAdRequestGate = InstructionPatch(
 )
 
 /**
- * House-ad countdown entry, the first block of the counter coroutine that
- * `HouseAdPopupView` runs. The counter at `+0x4C` is deserialized from the popup
- * prefab, so its value cannot be reduced here; it only has to be stepped past.
- *
- *     ldr   r0, [r5, #0x4c]   ; countdown in seconds
- *     cmp   r0, #0
- *     bgt   wait_one_second   ; loop body, one 1.0 s tween per second
- *     b     finished          ; counter already spent
- *   ...
- *   finished:
- *     ldr   r5, [r5, #0x40]   ; the close control, enabled as soon as the
- *     ...                     ; countdown ends
- *
- * Branching straight to `finished` enables the close control immediately, so the
- * in-house ad can be skipped before the countdown would have run out. The null
- * check on the popup view and the `finished` block itself are untouched.
- */
-internal val houseAdCountdownEntry = InstructionPatch(
-    name = "house-ad countdown entry",
-    expectedOffset = 0x15B79BC,
-    window = hex("4c 00 95 e5 00 00 50 e3 05 00 00 ca 16 00 00 ea"),
-    edits = listOf(
-        InstructionEdit(
-            offsetInWindow = 8,
-            original = hex("05 00 00 ca"), // bgt -> unconditional b to the finished block
-            replacement = hex("17 00 00 ea"),
-        ),
-    ),
-)
-
-/**
  * House-ad timer limit selection, which reads `GlobalDebugTools.FasterHouseAds`
  * and picks 15 seconds normally or 3 seconds when that developer flag is on.
  *
@@ -193,6 +162,106 @@ internal val houseAdTimerLimit = InstructionPatch(
             offsetInWindow = 12,
             original = hex("0f 10 00 03"), // moveq r1, #15
             replacement = hex("01 10 00 03"),
+        ),
+    ),
+)
+
+/**
+ * The house-ad countdown, as a coroutine in the popup view.
+ *
+ * The counter is a serialized field at `+0x4C` of the popup, and the countdown
+ * label is the UI object at `+0x3C`. Every second the coroutine decrements the
+ * counter, writes the new value into the label, and waits again. When the
+ * counter reaches zero it runs a finish block that enables the close control at
+ * `+0x40`, which is what the user sees as "can close".
+ *
+ * Because the counter is deserialized from the prefab, its value cannot be
+ * changed from code. The three edits below therefore each remove the wait a
+ * different way, so a single missed one does not leave the ad unusable.
+ */
+internal object HouseAdCountdown {
+    /**
+     * Subtract 15 per tick, so the counter reaches zero on the first tick and
+     * the close control appears after one second. The countdown still runs and
+     * updates its label; it just does not linger.
+     */
+    val perTickSubtraction = InstructionPatch(
+        name = "house-ad countdown, 15 per tick",
+        expectedOffset = 0x15B7990,
+        window = hex(
+            "4c 00 95 e5 a6 62 a0 e1 01 00 40 e2 4c 00 85 e5 05 00 a0 e1",
+        ),
+        edits = listOf(
+            InstructionEdit(
+                offsetInWindow = 8,
+                original = hex("01 00 40 e2"), // sub r0, r0, #1
+                replacement = hex("0f 00 40 e2"),
+            ),
+        ),
+    )
+
+    /**
+     * Skip the wait loop altogether. The first check branches straight to the
+     * finish block, so the close control is enabled on the same frame the popup
+     * opens. This is the strongest of the three.
+     */
+    val skipWaitLoop = InstructionPatch(
+        name = "house-ad countdown, no wait loop",
+        expectedOffset = 0x15B79BC,
+        window = hex("4c 00 95 e5 00 00 50 e3 05 00 00 ca 16 00 00 ea"),
+        edits = listOf(
+            InstructionEdit(
+                offsetInWindow = 8,
+                original = hex("05 00 00 ca"), // bgt wait_one_second
+                replacement = hex("17 00 00 ea"), // b finished
+            ),
+        ),
+    )
+
+    /**
+     * Shrink the per-tick wait from one second to about two milliseconds, so
+     * the whole countdown runs inside a single frame even though the loop
+     * itself is left intact. Independent of the other two: it changes the wait,
+     * not the loop test.
+     *
+     * Only powers of two are encodable as an ARM immediate, hence 0x3B000000
+     * rather than a rounder 0.01.
+     */
+    val fastTick = InstructionPatch(
+        name = "house-ad countdown, fast tick",
+        expectedOffset = 0x15B79EC,
+        window = hex("ee 2d ed eb fe 15 a0 e3 00 20 a0 e3 00 50 a0 e1"),
+        edits = listOf(
+            InstructionEdit(
+                offsetInWindow = 4,
+                original = hex("fe 15 a0 e3"), // mov r1, #1.0f
+                replacement = hex("3b 14 a0 e3"), // mov r1, #0.001953125f
+            ),
+        ),
+    )
+
+    val all = listOf(skipWaitLoop, perTickSubtraction, fastTick)
+}
+
+/**
+ * The in-house ad's store redirect. It builds an Intent around a store URI and
+ * starts it, so a stray tap on the ad drops the player in the Play Store.
+ * Returning immediately leaves the tap with nothing to do, and does not touch
+ * the ad's own layout or the close button.
+ */
+internal val houseAdStoreRedirect = InstructionPatch(
+    name = "in-house ad store redirect",
+    expectedOffset = 0x15B7AA4,
+    window = hex(
+        "10 40 2d e9 30 00 9f e5 00 00 9f e7 27 2d ed eb bc 2d ed eb" +
+            "00 10 a0 e3 00 40 a0 e1 d3 82 77 eb 18 00 9f e5 00 00 9f e7" +
+            "20 2d ed eb 00 10 a0 e1 04 00 a0 e1 62 2d ed eb 52 2c ed eb",
+    ),
+    edits = listOf(
+        InstructionEdit(
+            offsetInWindow = 0,
+            original = hex("10 40 2d e9"), // push {r4, lr}
+            replacement = hex("1e ff 2f e1"), // bx lr
         ),
     ),
 )

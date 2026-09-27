@@ -126,19 +126,36 @@ untouched, and banners and interstitials keep working.
 
 ### Instant in-house ad close
 
-Removes the in-house ad's countdown so its close button is usable straight away,
-and shortens the in-house ad timer to one second. This is the game's own house
-ad, the cross-promotion shown when a rewarded ad cannot be loaded, not a
+Removes the wait before the in-house ad's close button becomes usable, and
+shortens the in-house ad timer to one second. This is the game's own house ad,
+the cross-promotion shown when a rewarded ad cannot be loaded, not a
 third-party ad-provider timer.
 
-The countdown value is deserialized from the popup prefab, so it is stepped past
-rather than shortened: the counter coroutine branches straight to the block that
-enables the close control, instead of running one one-second tween per remaining
-second.
+The countdown is a coroutine in the popup view. Its counter is deserialized from
+the popup prefab, so the value cannot be changed from code and the wait has to be
+removed instead. Three independent bypasses are applied together, so a single
+missed one cannot leave the ad unusable:
 
-Both Offline Games patches are opt-in, and both support only `3.14.1` (`3204`)
-for ARMv7, from either the XAPK or the APKS form of the bundle. Each edit is
-matched against an exact instruction window at an exact offset in
+- **No wait loop** — the coroutine branches straight to its finish block, so the
+  close control is enabled on the same frame the popup opens.
+- **15 per tick** — the per-tick subtraction covers the whole counter, so it
+  reaches zero on the first tick.
+- **Fast tick** — the one-second wait becomes about two milliseconds, so the
+  loop finishes inside a frame even though it is left intact.
+
+The close control is still enabled by the game's own finish block, so the
+countdown and the button keep their normal relationship.
+
+### In-house ad not clickable
+
+Stops a tap on the in-house ad from opening the Play Store. The ad's click
+handler builds an Intent around a store URI and starts it, which is an easy way
+to leave the game by accident; that handler now returns immediately. The ad
+itself, its countdown and its close button are untouched.
+
+All three Offline Games patches are opt-in, and all support only `3.14.1`
+(`3204`) for ARMv7, from either the XAPK or the APKS form of the bundle. Each
+edit is matched against an exact instruction window at an exact offset in
 `libil2cpp.so`, and the write is read back before the library is saved. Anything
 whose code does not match a known window is rejected unchanged, and the error
 names the window, its offset and the library hash.

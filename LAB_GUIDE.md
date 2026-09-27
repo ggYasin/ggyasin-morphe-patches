@@ -53,18 +53,24 @@ is removed first. Removing an installed app deletes its local application data.
 
 1. Select `offline_games.xapk` or `Offline_Games_3.14.1.apks` as the original app
    bundle. Both carry the same `libil2cpp.so`.
-2. In Expert mode, enable the Offline Games patches you want:
+2. In Expert mode, enable the Offline Games patches you want. All three are
+   opt-in, so in Simple mode none of them run and the app behaves exactly as if
+   unpatched.
    - **In-house ad only** stops the game from requesting rewarded ads, so its
      own cross-promotion is used every time.
-   - **Instant in-house ad close** enables the in-house ad's close button
-     immediately, without waiting out its countdown.
+   - **Instant in-house ad close** removes the wait before the in-house ad's
+     close button becomes usable, using three independent bypasses at once.
+   - **In-house ad not clickable** stops a tap on the in-house ad from opening
+     the Play Store.
 3. Patch and save the output.
 4. Install on an emulator or a disposable test device. The patched set is signed
    with Morphe's key, so an existing official install has to be removed first.
-5. Trigger a rewarded ad, for example an extra life, and confirm the in-house
-   popup appears and can be closed straight away.
+5. Trigger a rewarded ad, for example **Save me** in the game-over screen or a
+   rewarded-video hint, and confirm the in-house popup appears and can be closed
+   straight away. With **In-house ad not clickable** enabled, tapping the ad
+   itself should do nothing.
 
-Both patches require the exact ARMv7 `3.14.1` (`3204`) bundle. An app that an
+All three patches require the exact ARMv7 `3.14.1` (`3204`) bundle. An app that an
 earlier bundle of this project already patched can be patched again; only the
 edits that are still missing are applied, so re-patching is a no-op rather than
 an error.
