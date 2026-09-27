@@ -1,3 +1,9 @@
+## [1.6.1-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.6.0...v1.6.1-dev.1) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* reject stock native-library fallbacks in Offline Games ([50c0b8c](https://github.com/ggYasin/ggyasin-morphe-patches/commit/50c0b8c8073ca3d671b0a3436f049ed9a21cd514))
+
 ## [1.6.0](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.5.0...v1.6.0) (2026-09-27)
 
 ### ✨ New Features
