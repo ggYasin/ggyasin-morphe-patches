@@ -5,20 +5,20 @@ import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.SupportedAbi
+import app.morphe.patcher.patch.ResourcePatchContext
 import java.io.File
 import java.security.MessageDigest
 import java.util.logging.Logger
-
-internal const val LIBRARY_PATH = "lib/armeabi-v7a/libil2cpp.so"
-private const val LIBRARY_SIZE = 73_310_748
-private const val ORIGINAL_SHA256 = "dd619f322538d339137e30a8c53e913ddecb59e78296ba86a79f058853ba0512"
 
 internal val OFFLINE_GAMES_COMPATIBILITY = Compatibility(
     name = "Offline Games",
     packageName = "com.JindoBlu.OfflineGames",
     apkFileType = ApkFileType.XAPK_REQUIRED,
     appIconColor = 0x263238,
-    targets = listOf(AppTarget(version = "3.14.1", versionCodes = mapOf(SupportedAbi.ARMEABI_V7A to 3204))),
+    targets = listOf(
+        AppTarget(version = "3.15.3", versionCodes = mapOf(SupportedAbi.ARM64_V8A to 3327)),
+        AppTarget(version = "3.14.1", versionCodes = mapOf(SupportedAbi.ARMEABI_V7A to 3204)),
+    ),
 )
 
 /** Offsets are file offsets, resolved independently using IL2CPP method-token RIDs. */
@@ -88,7 +88,7 @@ internal val startupParallelAds = NativeEdit(
 
 internal val startupEdits = listOf(startupFirebaseWait, startupCountryWait, startupParallelAds)
 
-private val currentEdits = listOf(
+private val armv7Edits = listOf(
     rewardedAdFallback, rewardedAdDownload, houseAdHideCounter,
     houseAdShowClose, houseAdCounter, houseAdStoreRedirect,
 ) + startupEdits
@@ -106,26 +106,74 @@ private val retiredEdits = listOf(
     NativeEdit("legacy IEnumerator.Reset", 0x15B7AA4, "10 40 2d e9", "1e ff 2f e1"),
 )
 
+/** Each architecture has independently verified instructions; offsets are not interchangeable. */
+internal class NativeBuild(
+    val version: String,
+    val abi: String,
+    val size: Int,
+    val sha256: String,
+    val edits: List<NativeEdit>,
+    val retired: List<NativeEdit> = emptyList(),
+) {
+    val path = "lib/$abi/libil2cpp.so"
+}
+
+private val nativeBuilds = listOf(
+    NativeBuild(
+        "3.14.1", "armeabi-v7a", 73_310_748,
+        "dd619f322538d339137e30a8c53e913ddecb59e78296ba86a79f058853ba0512",
+        armv7Edits, retiredEdits,
+    ),
+    NativeBuild(
+        "3.15.3", "arm64-v8a", 90_250_192,
+        "80dbeb4bd8f5cd8e1f5c2590c410ac4a49defd56a5cd64a11dc455c18947d74e",
+        listOf(
+            NativeEdit(rewardedAdFallback.name, 0x2AA08A0, "e0 00 00 36", "3e 00 00 14"),
+            NativeEdit(rewardedAdDownload.name, 0x258DDDC, "fe 57 be a9", "c0 03 5f d6"),
+            NativeEdit(houseAdHideCounter.name, 0x28EC630, "e1 d7 9f 1a", "e1 03 1f 2a"),
+            NativeEdit(houseAdShowClose.name, 0x28EC64C, "e1 17 9f 1a", "21 00 80 52"),
+            NativeEdit(houseAdCounter.name, 0x28ECE4C, "08 10 40 b9", "e8 03 1f 2a"),
+            NativeEdit(houseAdStoreRedirect.name, 0x28ECD60, "fe 0f 1e f8", "c0 03 5f d6"),
+            NativeEdit(startupFirebaseWait.name, 0x257631C, "0a 01 00 54", "08 00 00 14"),
+            NativeEdit(startupCountryWait.name, 0x2576C48, "c0 1a 00 36", "d6 00 00 14"),
+            NativeEdit(startupParallelAds.name, 0x2577360, "95 0a 00 36", "1f 20 03 d5"),
+        ),
+    ),
+)
+
+internal fun ResourcePatchContext.offlineGamesBuild(): NativeBuild {
+    val version = packageMetadata.versionName
+    return nativeBuilds.singleOrNull { it.version == version && this[it.path].isFile }
+        ?: throw PatchException("Unsupported Offline Games $version native build. Use 3.15.3 ARM64 or 3.14.1 ARMv7, with the complete APKS/XAPK.")
+}
+
+internal fun ResourcePatchContext.patchOfflineGamesLibrary(selected: List<NativeEdit>) {
+    val build = offlineGamesBuild()
+    val names = selected.map { it.name }.toSet()
+    val edits = build.edits.filter { it.name in names }
+    check(edits.size == names.size) { "Missing version-specific Offline Games edit" }
+    patchIl2CppLibrary(this[build.path], build, edits)
+}
+
 /** Accept only the original binary plus precisely the edits this repository has shipped. */
-internal fun patchIl2CppLibrary(library: File, selected: List<NativeEdit>) {
-    if (!library.isFile) throw PatchException("Missing $LIBRARY_PATH. Select the complete ARMv7 XAPK/APKS.")
+private fun patchIl2CppLibrary(library: File, build: NativeBuild, selected: List<NativeEdit>) {
     val bytes = library.readBytes()
-    if (bytes.size != LIBRARY_SIZE) throw PatchException("Unsupported ARMv7 library size: ${bytes.size}.")
+    if (bytes.size != build.size) throw PatchException("Unsupported ${build.version} ${build.abi} library size: ${bytes.size}.")
     val normalized = bytes.copyOf()
-    (currentEdits + retiredEdits).forEach { edit ->
+    (build.edits + build.retired).forEach { edit ->
         if (!bytes.matchesAt(edit.offset, edit.original) && !bytes.matchesAt(edit.offset, edit.replacement)) {
-            throw PatchException("Unexpected bytes at ${edit.name} (0x${edit.offset.toString(16)}). Use the original 3.14.1 ARMv7 bundle.")
+            throw PatchException("Unexpected bytes at ${edit.name} (0x${edit.offset.toString(16)}). Use the original ${build.version} ${build.abi} bundle.")
         }
         edit.original.copyInto(normalized, edit.offset)
     }
-    if (normalized.sha256() != ORIGINAL_SHA256) {
+    if (normalized.sha256() != build.sha256) {
         throw PatchException("Unknown libil2cpp.so modifications outside supported edits. SHA-256: ${bytes.sha256()}")
     }
-    retiredEdits.forEach { it.original.copyInto(bytes, it.offset) }
+    build.retired.forEach { it.original.copyInto(bytes, it.offset) }
     selected.forEach { it.replacement.copyInto(bytes, it.offset) }
     library.writeBytes(bytes)
     check(library.readBytes().contentEquals(bytes)) { "Native library read-back failed" }
-    Logger.getLogger("PatchLabOfflineGames").info("Verified ARMv7 native output SHA-256: ${bytes.sha256()}")
+    Logger.getLogger("PatchLabOfflineGames").info("Verified ${build.version} ${build.abi} native output SHA-256: ${bytes.sha256()}")
 }
 
 private fun ByteArray.matchesAt(offset: Int, expected: ByteArray) =

@@ -15,6 +15,6 @@ val inHouseAdNotClickablePatch = rawResourcePatch(
     dependsOn(offlineGamesNativeLoaderPatch)
 
     execute {
-        patchIl2CppLibrary(this[LIBRARY_PATH], listOf(houseAdStoreRedirect))
+        patchOfflineGamesLibrary(listOf(houseAdStoreRedirect))
     }
 }

@@ -14,7 +14,6 @@ import java.util.zip.ZipFile;
 /** Stages the exact Unity libraries in the mounted APK, rather than Android's stock extraction. */
 public final class NativeLibraryStore {
     public static final String MANIFEST = "assets/patchlab/offlinegames-native.properties";
-    private static final String PREFIX = "lib/armeabi-v7a/";
     private static final String[] LIBRARIES = {"libmain.so", "libunity.so", "libil2cpp.so"};
 
     private NativeLibraryStore() {}
@@ -33,6 +32,12 @@ public final class NativeLibraryStore {
             if (!"1".equals(hashes.getProperty("format"))) {
                 throw new IOException("Unsupported Offline Games native manifest");
             }
+            // Pre-ARM64 bundles did not carry an ABI key. Keep those mounts readable.
+            String abi = hashes.getProperty("abi", "armeabi-v7a");
+            if (!abi.equals("armeabi-v7a") && !abi.equals("arm64-v8a")) {
+                throw new IOException("Unsupported Offline Games native ABI: " + abi);
+            }
+            String prefix = "lib/" + abi + "/";
             File directory = new File(root, identity);
             if (!directory.isDirectory() && !directory.mkdirs()) {
                 throw new IOException("Cannot create native library directory: " + directory);
@@ -45,7 +50,7 @@ public final class NativeLibraryStore {
                 File output = new File(directory, name);
                 if (output.isFile() && expected.equals(digest(output))) continue;
 
-                ZipEntry entry = requiredEntry(zip, PREFIX + name);
+                ZipEntry entry = requiredEntry(zip, prefix + name);
                 File staged = File.createTempFile(name, ".tmp", directory);
                 try {
                     MessageDigest sha = sha256();

@@ -49,11 +49,11 @@ The patched APK set is signed with Morphe's configured key. It cannot update an
 official ZenSMS installation signed by the publisher unless that installation
 is removed first. Removing an installed app deletes its local application data.
 
-## Patch Offline Games 3.14.1
+## Patch Offline Games 3.15.3 or 3.14.1
 
-1. Select `offline_games.xapk` or `Offline_Games_3.14.1.apks` as the original app
-   bundle. The supplied APKS contains an old-patched base copy and a stock ARM
-   split copy; the verifier accepts known prior edits and checks the merged result.
+1. Select `Offline Games_3.15.3.apks` (ARM64, version code `3327`). The older
+   `offline_games.xapk` / `Offline_Games_3.14.1.apks` (ARMv7, `3204`) remains
+   supported. Use the complete bundle, including the native split.
 2. In Expert mode, explicitly select the Offline Games patches you want:
    - **In-house ad only** stops the game from requesting rewarded ads, so its
      own cross-promotion is used every time.
@@ -67,7 +67,7 @@ is removed first. Removing an installed app deletes its local application data.
 4. For root/mount use, replace the existing mount with this newly patched output,
    force-stop the game and start it again. The shared native-loader dependency
    stages verified libraries from the mounted APK, so it no longer uses the
-   original extracted native code. Allow about 88 MB additional private storage
+   original extracted native code. Allow about 110 MB (ARM64) or 88 MB (ARMv7) additional private storage
    on first launch. For a standalone install, use a test device/profile; the
    publisher-signed installation cannot be updated with Morphe's signing key.
 5. Trigger a rewarded ad, for example **Save me** in the game-over screen or a
@@ -75,8 +75,9 @@ is removed first. Removing an installed app deletes its local application data.
    straight away. With **In-house ad not clickable** enabled, tapping the ad
    itself should do nothing.
 
-All four patches require the exact ARMv7 `3.14.1` (`3204`) library. Known earlier
-edits are accepted and obsolete ones repaired; unknown changes are rejected.
+All four patches require the verified ARM64 `3.15.3` (`3327`) or ARMv7 `3.14.1`
+(`3204`) library. Known earlier edits are accepted and obsolete ones repaired;
+unknown changes or unsupported version/architecture combinations are rejected.
 A startup toast and `PatchLabOfflineGames` logcat message now verify the actual
 mapped library **after** Unity loads. Note whether it says patched code loaded
 or native code NOT verified. An absent message is also useful evidence.

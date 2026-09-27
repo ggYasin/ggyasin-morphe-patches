@@ -21,9 +21,8 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 
 - App: Offline Games
 - Package: `com.JindoBlu.OfflineGames`
-- Version: `3.14.1` (`3204`)
-- Architecture: `armeabi-v7a`
-- Input format: XAPK
+- Versions: `3.15.3` (`3327`, `arm64-v8a`), `3.14.1` (`3204`, `armeabi-v7a`)
+- Input format: complete APKS or XAPK bundle
 
 - App: 9GAG
 - Package: `com.ninegag.android.app`
@@ -145,8 +144,9 @@ game's existing parallel path. Requests can continue in the background; this
 does not disable the game's internet access. Cached/default configuration and
 normal consent handling remain available. See the [startup analysis](docs/offlinegames-startup.md).
 
-All four Offline Games patches are opt-in, and all support only `3.14.1`
-(`3204`) for ARMv7, from either the XAPK or APKS. A normalized whole-library
+All four Offline Games patches are opt-in and support `3.15.3` (`3327`) ARM64
+and `3.14.1` (`3204`) ARMv7, from a complete XAPK or APKS. Each build has its own
+independently verified native instruction table. A normalized whole-library
 SHA-256 check accepts original and known previously patched inputs, while
 rejecting unknown changes. Obsolete edits from earlier releases are restored.
 
@@ -154,7 +154,8 @@ rejecting unknown changes. Obsolete edits from earlier releases are restored.
 Unity normally loads Android's extracted original libraries, which mounting only
 the base APK does not update. The fix extracts and verifies the Unity libraries
 from the mounted APK into an app-private, content-addressed directory and points
-Unity there. First launch requires roughly 88 MB extra storage. Repatch and
+Unity there. First launch requires roughly 88 MB extra storage for ARMv7 or
+110 MB for ARM64. Repatch and
 replace the mount after updating the source; a source update alone cannot change
 the running game. See [native-loading investigation and device checks](docs/offlinegames-native-loading.md).
 
