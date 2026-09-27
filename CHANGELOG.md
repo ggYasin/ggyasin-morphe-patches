@@ -1,3 +1,9 @@
+## [1.6.0](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.5.0...v1.6.0) (2026-09-27)
+
+### ✨ New Features
+
+* support Offline Games 3.15.3 ARM64 ([6f1811c](https://github.com/ggYasin/ggyasin-morphe-patches/commit/6f1811cab2c06dd419aeaf5313ee0276bda8a539))
+
 ## [1.6.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.5.0...v1.6.0-dev.1) (2026-09-27)
 
 ### ✨ New Features
