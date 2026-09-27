@@ -33,7 +33,23 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.3.0](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.3.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;5 patches total
+> **[v1.4.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.4.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;7 patches total
+<details open>
+<summary>📦 9GAG&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
+<br>
+
+**🎯 Supported versions:**
+
+| 8.23.0 |
+| :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Deactivate Firebase Analytics (9GAG 8.23.0)](#deactivate-firebase-analytics-9gag-8-23-0) | Optional: disables Firebase Analytics collection using its documented manifest setting. Does not remove Firebase services. |  |
+| [Remove 9GAG ads, promoted posts and trackers (8.23.0)](#remove-9gag-ads-promoted-posts-and-trackers-8-23-0) | Disables ad gates and bottom-banner initialization, filters promoted feed posts, and blocks listed ad/tracking hosts. |  |
+
+</details>
+
 <details open>
 <summary>📦 ZenSMS&nbsp;&nbsp;•&nbsp;&nbsp;3 patches</summary>
 <br>
