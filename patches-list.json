@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.2.4",
+  "version": "1.3.0-dev.1",
   "patches": [
     {
       "name": "Expanded OTP detection",
@@ -34,8 +34,36 @@
       "options": []
     },
     {
-      "name": "One-second house-ad countdown",
-      "description": "Changes Offline Games' built-in house-ad countdown from 15 seconds to 1.",
+      "name": "In-house ad only",
+      "description": "Stops Offline Games from requesting rewarded ads, so the game always falls back to its own in-house ad. Banners and interstitials are untouched.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.JindoBlu.OfflineGames",
+          "name": "Offline Games",
+          "description": null,
+          "apkFileType": "XAPK_REQUIRED",
+          "appIconColor": "#263238",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "3.14.1",
+              "versionCodes": {
+                "ARMEABI_V7A": 3204
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Instant in-house ad close",
+      "description": "Removes the in-house ad countdown so its close button is usable straight away, and shortens the in-house ad timer to one second.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [

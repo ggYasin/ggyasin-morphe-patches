@@ -1,3 +1,13 @@
+## [1.3.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.2.4...v1.3.0-dev.1) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* use one hex string per fingerprint ([0a33385](https://github.com/ggYasin/ggyasin-morphe-patches/commit/0a333855f24e7a5462dad8406f9a29252e973e40))
+
+### ✨ New Features
+
+* add Offline Games in-house ad patches ([a364456](https://github.com/ggYasin/ggyasin-morphe-patches/commit/a3644569b757de50357e1f12587fdb736ff0f3d3))
+
 # 1.2.4
 
 - Make each of the three expanded OTP regexes reject messages containing `تخفیف` anywhere in the SMS body.

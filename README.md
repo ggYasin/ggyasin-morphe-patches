@@ -28,8 +28,39 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
+> **[v1.3.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.3.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;5 patches total
+<details open>
+<summary>📦 ZenSMS&nbsp;&nbsp;•&nbsp;&nbsp;3 patches</summary>
+<br>
 
-<!-- Generated from patches-list.json on release. Do not edit by hand. -->
+**🎯 Supported versions:**
+
+| 1.2.04 |
+| :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Expanded OTP detection](#expanded-otp-detection) | Extends ZenSMS's original OTP extractor with universal and Persian patterns. |  |
+| [RTL SMS lists](#rtl-sms-lists) | Adds RTL conversation rows while keeping conversation titles left to right. |  |
+| [enable premium state](#enable-premium-state) | Makes synchronous and reactive premium checks report true. |  |
+
+</details>
+
+<details open>
+<summary>📦 Offline Games&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
+<br>
+
+**🎯 Supported versions:**
+
+| 3.14.1 |
+| :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [In-house ad only](#in-house-ad-only) | Stops Offline Games from requesting rewarded ads, so the game always falls back to its own in-house ad. Banners and interstitials are untouched. |  |
+| [Instant in-house ad close](#instant-in-house-ad-close) | Removes the in-house ad countdown so its close button is usable straight away, and shortens the in-house ad timer to one second. |  |
+
+</details>
 
 <!-- PATCHES_END -->
 
