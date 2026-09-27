@@ -3,8 +3,17 @@
 ## Why 1.4.1 could patch successfully without changing gameplay
 
 The supplied `Offline_Games_3.14.1.apks` contains a base APK and an ARMv7
-configuration split. `libil2cpp.so` in that split is SHA-256
-`dd619f322538d339137e30a8c53e913ddecb59e78296ba86a79f058853ba0512`.
+configuration split, **both containing `libil2cpp.so`**:
+
+- `base.apk`: SHA-256 `cb47f0498be4c13765e6364ed99fae6c889339d07ddc5a37b1790228cb0c272f`
+  (the old 15-to-1 edit).
+- `split_config.armeabi_v7a.apk`: SHA-256
+  `dd619f322538d339137e30a8c53e913ddecb59e78296ba86a79f058853ba0512` (stock).
+
+This explains the original hash-error report without assuming the user selected
+the wrong file. The earlier inspection examined only the split and missed the
+duplicate in the base. The pristine `offline_games.xapk` contains its library
+only in `config.armeabi_v7a.apk`.
 
 A real Morphe Desktop 1.17.0 / Patcher 1.14.1 run applying all three 1.4.1
 patches produced a rebuilt APK whose library was SHA-256
@@ -105,3 +114,38 @@ Local checks cover actual APK rebuilding, loader cache/mount replacement,
 per-file integrity, and isolated ARM control-flow execution with engine calls
 stubbed. Full Unity UI, Android linker, and reward behavior still require a
 device run; they must not be described as device-tested without that evidence.
+
+## Validation record (2026-09-27)
+
+Built `v1.4.2-dev.1` with CI, including four passing loader tests: mounted APK
+replacement, damaged-cache repair, incorrect payload rejection, and rejection
+of a stock APK without a patch manifest. Applied with Morphe Desktop 1.17.0 /
+Patcher 1.14.1 to the supplied APKS, to a real rebuilt 1.4.1 output, and again to
+the new output. All three runs produced library SHA-256
+`1262828c2d1a93db14317666039751ac6a3c37bce00f1863e724197c450ef79b`.
+
+The output verifier checks the final ZIP payloads, manifest hashes, changed DEX
+resolver and extension definitions. Unicorn executes the actual patched ARM
+blocks: opening with counters 0/1/3/15/60 always activates the button and hides
+the counter; initialization writes zero; the normal coroutine completes; the
+real store handler and rewarded download adapter return immediately; and the
+rewarded branch enters the existing house-ad path. Unity calls are stubbed.
+
+Selecting **only Instant in-house ad close** on the pristine XAPK also rebuilt
+successfully. Its library hash is
+`145d83bb19545b75b0d3c24dde3a5163d7c43885bab73c7a732ff31db16bea0b`;
+the unselected store handler and rewarded branch remain stock. Checks are about
+patch behavior, not ZIP timestamps or signing identities.
+
+Reproduce the all-selected check using a built bundle and the original inputs:
+
+```sh
+java -Xmx2g -jar morphe-desktop-1.17.0-all.jar patch Offline_Games_3.14.1.apks \
+  -p patches.mpp --exclusive -e 'In-house ad only' \
+  -e 'Instant in-house ad close' -e 'In-house ad not clickable' \
+  --unsigned -t work -o patched.apk -r result.json
+python scripts/verify_offlinegames.py Offline_Games_3.14.1.apks patched.apk
+```
+
+Unsigned output is for local inspection only. Let Manager use its configured
+signing key for installation/mounting.

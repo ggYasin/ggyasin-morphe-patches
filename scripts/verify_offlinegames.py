@@ -15,10 +15,8 @@ from loguru import logger
 logger.disable("androguard")
 from androguard.core.dex import DEX
 from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_HOOK_CODE
-from unicorn.arm_const import UC_ARM_REG_PC, UC_ARM_REG_LR, UC_ARM_REG_SP
-from unicorn.arm_const import UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R2
-from unicorn.arm_const import UC_ARM_REG_R3, UC_ARM_REG_R4, UC_ARM_REG_R5
-from unicorn.arm_const import UC_ARM_REG_R6, UC_ARM_REG_R9
+from unicorn.arm_const import UC_ARM_REG_PC, UC_ARM_REG_LR
+from unicorn.arm_const import UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R4, UC_ARM_REG_R9
 
 LIBRARY = "lib/armeabi-v7a/libil2cpp.so"
 MANIFEST = "assets/patchlab/offlinegames-native.properties"
@@ -26,15 +24,23 @@ ORIGINAL_HASH = "dd619f322538d339137e30a8c53e913ddecb59e78296ba86a79f058853ba051
 
 
 def original_library(path):
+    candidates = []
     with zipfile.ZipFile(path) as archive:
         if LIBRARY in archive.namelist():
-            return archive.read(LIBRARY)
+            candidates.append(archive.read(LIBRARY))
         for name in archive.namelist():
             if name.endswith(".apk"):
                 with zipfile.ZipFile(io.BytesIO(archive.read(name))) as split:
                     if LIBRARY in split.namelist():
-                        return split.read(LIBRARY)
-    raise AssertionError("Input bundle has no ARMv7 libil2cpp.so")
+                        data = split.read(LIBRARY)
+                        candidates.append(data)
+                        print("INPUT", name, hashlib.sha256(data).hexdigest())
+    # The supplied APKS has a legacy-patched copy in base.apk AND a stock copy
+    # in the ARM split. Inspect every entry instead of silently choosing the first.
+    for data in candidates:
+        if hashlib.sha256(data).hexdigest() == ORIGINAL_HASH:
+            return data
+    raise AssertionError("Input has no verified original ARMv7 libil2cpp.so")
 
 
 def check(condition, message):
