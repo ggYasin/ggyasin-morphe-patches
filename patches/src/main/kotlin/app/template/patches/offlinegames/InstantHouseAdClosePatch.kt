@@ -13,6 +13,6 @@ val instantHouseAdClosePatch = rawResourcePatch(
     dependsOn(offlineGamesNativeLoaderPatch)
 
     execute {
-        patchIl2CppLibrary(this[LIBRARY_PATH], listOf(houseAdShowClose, houseAdHideCounter, houseAdCounter))
+        patchOfflineGamesLibrary(listOf(houseAdShowClose, houseAdHideCounter, houseAdCounter))
     }
 }

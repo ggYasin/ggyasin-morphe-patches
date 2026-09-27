@@ -15,11 +15,12 @@ private val nativeLibraryManifestPatch = rawResourcePatch {
     // Dependencies finalize after dependents: hash the libraries after ALL selected edits.
     finalize {
         val names = listOf("libmain.so", "libunity.so", "libil2cpp.so")
+        val build = offlineGamesBuild()
         val manifest = this["assets/patchlab/offlinegames-native.properties"]
         manifest.parentFile.mkdirs()
-        manifest.writeText("format=1\n" + names.joinToString("\n", postfix = "\n") { name ->
-            val library = this["lib/armeabi-v7a/$name"]
-            check(library.isFile) { "Missing ARMv7 Unity library: $name" }
+        manifest.writeText("format=1\nabi=${build.abi}\nversion=${build.version}\n" + names.joinToString("\n", postfix = "\n") { name ->
+            val library = this["lib/${build.abi}/$name"]
+            check(library.isFile) { "Missing ${build.abi} Unity library: $name" }
             val digest = MessageDigest.getInstance("SHA-256")
             library.inputStream().use { input ->
                 val buffer = ByteArray(64 * 1024)
@@ -51,7 +52,7 @@ internal val offlineGamesNativeLoaderPatch = bytecodePatch {
         if (!alreadyPatched) {
             check(method.instructions.count() == 4 && references.filterIsInstance<FieldReference>().any {
                 it.definingClass == "Landroid/content/pm/ApplicationInfo;" && it.name == "nativeLibraryDir"
-            }) { "Unexpected Unity native-library path resolver; expected Offline Games 3.14.1" }
+            }) { "Unexpected Unity native-library path resolver; expected a supported Offline Games build" }
             method.removeInstructions(0, method.instructions.count())
             method.addInstructions(
                 0,

@@ -13,6 +13,6 @@ val fastOfflineGamesStartupPatch = rawResourcePatch(
     dependsOn(offlineGamesNativeLoaderPatch)
 
     execute {
-        patchIl2CppLibrary(this[LIBRARY_PATH], startupEdits)
+        patchOfflineGamesLibrary(startupEdits)
     }
 }

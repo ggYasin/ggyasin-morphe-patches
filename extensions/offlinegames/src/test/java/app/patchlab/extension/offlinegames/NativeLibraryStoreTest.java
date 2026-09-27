@@ -78,12 +78,39 @@ public class NativeLibraryStoreTest {
         }
     }
 
+    @Test public void arm64ManifestSelectsArm64PayloadAndUsesSeparateCache() throws Exception {
+        File apk = temporary.newFile("base.apk");
+        File root = temporary.newFolder("cache");
+        writeApk(apk, "armv7", false);
+        File armv7 = NativeLibraryStore.prepare(apk, root);
+        writeApk(apk, "arm64", false, "arm64-v8a");
+        File arm64 = NativeLibraryStore.prepare(apk, root);
+        assertNotEquals(armv7, arm64);
+        assertArrayEquals(bytes("arm64"), Files.readAllBytes(new File(arm64, "libil2cpp.so").toPath()));
+    }
+
+    @Test public void unsupportedAbiIsRejectedBeforeExtraction() throws Exception {
+        File apk = temporary.newFile("base.apk");
+        writeApk(apk, "bad ABI", false, "../../escape");
+        try {
+            NativeLibraryStore.prepare(apk, temporary.newFolder("cache"));
+            fail("Unsupported ABI accepted");
+        } catch (IOException expected) {
+            assertTrue(expected.getMessage().contains("ABI"));
+        }
+    }
+
     private static void writeApk(File file, String il2cpp, boolean mismatch) throws Exception {
+        writeApk(file, il2cpp, mismatch, null);
+    }
+
+    private static void writeApk(File file, String il2cpp, boolean mismatch, String abi) throws Exception {
         Map<String, byte[]> libs = new LinkedHashMap<>();
         libs.put("libmain.so", bytes("Unity loader"));
         libs.put("libunity.so", bytes("Unity engine"));
         libs.put("libil2cpp.so", bytes(il2cpp));
         StringBuilder manifest = new StringBuilder("format=1\n");
+        if (abi != null) manifest.append("abi=").append(abi).append('\n');
         for (var lib : libs.entrySet()) {
             byte[] hash = MessageDigest.getInstance("SHA-256").digest(lib.getValue());
             manifest.append(lib.getKey()).append('=');
@@ -93,7 +120,7 @@ public class NativeLibraryStoreTest {
         try (ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(file))) {
             entry(zip, NativeLibraryStore.MANIFEST, bytes(manifest.toString()));
             for (var lib : libs.entrySet()) {
-                entry(zip, "lib/armeabi-v7a/" + lib.getKey(),
+                entry(zip, "lib/" + (abi == null ? "armeabi-v7a" : abi) + "/" + lib.getKey(),
                         mismatch && lib.getKey().equals("libil2cpp.so") ? bytes("bad data") : lib.getValue());
             }
         }

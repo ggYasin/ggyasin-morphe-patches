@@ -24,24 +24,24 @@ MANIFEST = "assets/patchlab/offlinegames-native.properties"
 ORIGINAL_HASH = "dd619f322538d339137e30a8c53e913ddecb59e78296ba86a79f058853ba0512"
 
 
-def original_library(path):
+def original_library(path, library_path=LIBRARY, expected_hash=ORIGINAL_HASH):
     candidates = []
     with zipfile.ZipFile(path) as archive:
-        if LIBRARY in archive.namelist():
-            candidates.append(archive.read(LIBRARY))
+        if library_path in archive.namelist():
+            candidates.append(archive.read(library_path))
         for name in archive.namelist():
             if name.endswith(".apk"):
                 with zipfile.ZipFile(io.BytesIO(archive.read(name))) as split:
-                    if LIBRARY in split.namelist():
-                        data = split.read(LIBRARY)
+                    if library_path in split.namelist():
+                        data = split.read(library_path)
                         candidates.append(data)
                         print("INPUT", name, hashlib.sha256(data).hexdigest())
     # The supplied APKS has a legacy-patched copy in base.apk AND a stock copy
     # in the ARM split. Inspect every entry instead of silently choosing the first.
     for data in candidates:
-        if hashlib.sha256(data).hexdigest() == ORIGINAL_HASH:
+        if hashlib.sha256(data).hexdigest() == expected_hash:
             return data
-    raise AssertionError("Input has no verified original ARMv7 libil2cpp.so")
+    raise AssertionError("Input has no verified original " + library_path)
 
 
 def check(condition, message):
@@ -169,6 +169,12 @@ def main():
     parser.add_argument('patched')
     parser.add_argument('--fast-startup', action='store_true')
     args = parser.parse_args()
+    with zipfile.ZipFile(args.patched) as apk:
+        manifest = dict(line.split('=', 1) for line in apk.read(MANIFEST).decode().splitlines() if '=' in line)
+    if manifest.get('abi') == 'arm64-v8a':
+        from verify_offlinegames_arm64 import verify
+        verify(args)
+        return
     original = original_library(args.original)
     check(hashlib.sha256(original).hexdigest() == ORIGINAL_HASH, "Original input library verified")
     with zipfile.ZipFile(args.patched) as apk:
