@@ -25,6 +25,11 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 - Architecture: `armeabi-v7a`
 - Input format: XAPK
 
+- App: 9GAG
+- Package: `com.ninegag.android.app`
+- Version: `8.23.0` (`80230000`)
+- Input format: APK
+
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
@@ -122,6 +127,39 @@ the result back before writing. Any unexpected binary is rejected unchanged.
 
 The three ZenSMS patches are selected by default. The Offline Games patches are
 opt-in.
+
+### Remove 9GAG ads, promoted posts and trackers (8.23.0)
+
+The main 9GAG patch, selected by default. Derived from the Adobo patch project
+under the same GPLv3 licence; see [NOTICE](NOTICE) for attribution and the
+upstream baseline commit.
+
+It does four things:
+
+- **Disables the ad gate.** The boolean state-flow gate and its
+  `invokeSuspend` continuation both return `false`.
+- **Filters promoted feed posts.** It forces the existing hide-promoted argument
+  of the display query `Lhx3;->j(ILjava/lang/String;Z)Ljava/util/List;` to true,
+  reusing 9GAG's own filter rather than editing the underlying `d()` query
+  builder, whose other callers perform database maintenance.
+- **Stops the bottom banner.** The dedicated bottom-adhesion initializer
+  `Lo02;->i(Landroid/widget/FrameLayout;Lmc;)V` is made to set its supplied
+  frame to `GONE`, clear its children and return, after which four compiled
+  layouts also set the banner container to zero height and `gone`.
+- **Blocks ad and tracking hosts.** A fixed list of ad, analytics and attribution
+  hosts is rewritten to `0.0.0.0` in both string constants and bytecode string
+  references. This is a finite list, not proof that every tracker is blocked.
+
+Every fingerprint is validated against the exact instruction shape before it is
+edited, and each edit is required to match exactly one method, so a changed
+build is rejected rather than patched blindly.
+
+### Deactivate Firebase Analytics (9GAG 8.23.0)
+
+Optional and disabled by default. Sets the SDK's documented
+`firebase_analytics_collection_deactivated` manifest flag. Firebase
+initialization, services, messaging and Remote Config stay intact, and no
+Firebase service is removed.
 
 ## Build
 
