@@ -1,3 +1,21 @@
+## [1.6.1-dev.3](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.6.1-dev.2...v1.6.1-dev.3) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* version native loader classes when upgrading patched APKs ([27b0967](https://github.com/ggYasin/ggyasin-morphe-patches/commit/27b096732fdc2eab3c93285cfd1295d9e0b6408b))
+
+## [1.6.1-dev.2](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.6.1-dev.1...v1.6.1-dev.2) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* anchor native-loader success branch to the live method ([1a96e76](https://github.com/ggYasin/ggyasin-morphe-patches/commit/1a96e76e41c86797c6bd6fc2367f9859a89b8f3d))
+
+## [1.6.1-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.6.0...v1.6.1-dev.1) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* reject stock native-library fallbacks in Offline Games ([50c0b8c](https://github.com/ggYasin/ggyasin-morphe-patches/commit/50c0b8c8073ca3d671b0a3436f049ed9a21cd514))
+
 ## [1.6.0](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.5.0...v1.6.0) (2026-09-27)
 
 ### ✨ New Features

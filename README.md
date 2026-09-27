@@ -32,7 +32,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.6.0](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.6.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
+> **[v1.6.1-dev.3](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.6.1-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
 <details open>
 <summary>📦 9GAG&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -159,10 +159,14 @@ Unity there. First launch requires roughly 88 MB extra storage for ARMv7 or
 replace the mount after updating the source; a source update alone cannot change
 the running game. See [native-loading investigation and device checks](docs/offlinegames-native-loading.md).
 
-A startup toast now reports whether the expected `libil2cpp.so` is actually mapped
-after Unity loads. Please include that message and the exported patched APK when
-reporting unchanged behavior. File preparation alone does not prove that the
-game loaded those files. The prior ad behavior failure remains under investigation.
+Native loading is now strict: the loader cannot silently retry by library name
+and pick the installed stock copy. All three Unity libraries must map from the
+verified directory before Unity is marked ready; canonical filesystem aliases
+are accepted. A failure uses Unity's error dialog and saves
+`patchlab-native-load-error.txt` in the app's external-files directory. See the
+[strict-loading change and reporting steps](docs/offlinegames-strict-loader.md).
+This reports native loading failures rather than claiming an Android linker
+restriction is fixed without a device test.
 
 The three ZenSMS patches are selected by default. The Offline Games patches are
 opt-in.

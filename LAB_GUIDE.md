@@ -78,9 +78,13 @@ is removed first. Removing an installed app deletes its local application data.
 All four patches require the verified ARM64 `3.15.3` (`3327`) or ARMv7 `3.14.1`
 (`3204`) library. Known earlier edits are accepted and obsolete ones repaired;
 unknown changes or unsupported version/architecture combinations are rejected.
-A startup toast and `PatchLabOfflineGames` logcat message now verify the actual
-mapped library **after** Unity loads. Note whether it says patched code loaded
-or native code NOT verified. An absent message is also useful evidence.
+A startup toast and `PatchLabOfflineGames` logcat message verify actual mappings
+for all three Unity libraries **after** loading. Basename fallbacks are disabled;
+a mismatch stops startup with Unity's error dialog instead of running stock code.
+Capture that dialog or the saved `patchlab-native-load-error.txt` report from
+`Android/data/com.JindoBlu.OfflineGames/files/` if it fails. Its actual path is
+printed in the error. No saved-game data wipe is needed. See the
+[strict-loader guide](docs/offlinegames-strict-loader.md).
 If the countdown still runs, capture that log and the process's `libil2cpp.so`
 mapping using the commands in [the native-loading guide](docs/offlinegames-native-loading.md).
 For startup testing, compare warm launches offline, online, and online with the
