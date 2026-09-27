@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-27T08:47:30",
-  "description": "## [1.4.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.3.0...v1.4.0-dev.1) (2026-09-27)\n\n### ✨ New Features\n\n* add 9GAG 8.23.0 ad, promoted-post and tracker patches ([217dc96](https://github.com/ggYasin/ggyasin-morphe-patches/commit/217dc961c040a21fbc9c134f21531886002cde01))",
-  "download_url": "https://github.com/ggYasin/ggyasin-morphe-patches/releases/download/v1.4.0-dev.1/patches-1.4.0-dev.1.mpp",
+  "created_at": "2026-09-27T08:54:14",
+  "description": "## [1.4.0-dev.2](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.4.0-dev.1...v1.4.0-dev.2) (2026-09-27)\n\n### 🐛 Bug Fixes\n\n* prepend rather than replace the boxed ad-gate return ([6bd9a5a](https://github.com/ggYasin/ggyasin-morphe-patches/commit/6bd9a5af8c9ec5f292fd8eb7fc0e7c7e0b6246dc))",
+  "download_url": "https://github.com/ggYasin/ggyasin-morphe-patches/releases/download/v1.4.0-dev.2/patches-1.4.0-dev.2.mpp",
   "signature_download_url": "",
-  "version": "1.4.0-dev.1"
+  "version": "1.4.0-dev.2"
 }

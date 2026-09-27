@@ -1,3 +1,9 @@
+## [1.4.0-dev.2](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.4.0-dev.1...v1.4.0-dev.2) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* prepend rather than replace the boxed ad-gate return ([6bd9a5a](https://github.com/ggYasin/ggyasin-morphe-patches/commit/6bd9a5af8c9ec5f292fd8eb7fc0e7c7e0b6246dc))
+
 ## [1.4.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.3.0...v1.4.0-dev.1) (2026-09-27)
 
 ### ✨ New Features
