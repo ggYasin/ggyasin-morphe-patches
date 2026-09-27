@@ -2,10 +2,11 @@
 """Inspect a REAL rebuilt APK, then execute the patched ARM blocks with Unity calls stubbed.
 
 Requires androguard==4.1.4 and unicorn==2.1.4 in a separate Python environment.
-Usage: python verify_offlinegames.py ORIGINAL.apks PATCHED.apk
+Usage: python verify_offlinegames.py ORIGINAL.apks PATCHED.apk [--fast-startup]
 Run with all three Offline Games patches enabled.
 """
 import hashlib
+import argparse
 import io
 import struct
 import sys
@@ -15,8 +16,8 @@ from loguru import logger
 logger.disable("androguard")
 from androguard.core.dex import DEX
 from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UC_HOOK_CODE
-from unicorn.arm_const import UC_ARM_REG_PC, UC_ARM_REG_LR
-from unicorn.arm_const import UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R4, UC_ARM_REG_R9
+from unicorn.arm_const import UC_ARM_REG_PC, UC_ARM_REG_LR, UC_ARM_REG_CPSR
+from unicorn.arm_const import UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R4, UC_ARM_REG_R6, UC_ARM_REG_R9
 
 LIBRARY = "lib/armeabi-v7a/libil2cpp.so"
 MANIFEST = "assets/patchlab/offlinegames-native.properties"
@@ -100,10 +101,77 @@ def execute_ui_blocks(library):
     check(u.reg_read(UC_ARM_REG_PC) == 0x16F4924, "Rewarded decision enters existing house-ad path")
 
 
+def execute_startup_blocks(original, patched):
+    def emulator(data):
+        u = Uc(UC_ARCH_ARM, UC_MODE_ARM)
+        u.mem_map(0, 0x4800000)
+        u.mem_write(0, data)
+        u.mem_map(0x10000000, 0x10000)
+        return u
+
+    # In stock code, pending + before-deadline returns to the yield path.
+    # No comparison flag may keep the patched branch waiting.
+    for offset, target, label in ((0x128526C, 0x128528C, "Firebase/Remote Config"),
+                                  (0x12859DC, 0x1285DB0, "country lookup")):
+        u = emulator(patched)
+        for flags in range(16):
+            u.reg_write(UC_ARM_REG_CPSR, 0x10 | (flags << 28))
+            u.emu_start(offset, target, count=1)
+            check(u.reg_read(UC_ARM_REG_PC) == target, f"{label}: continuation taken with NZCV={flags:x}")
+        stock = emulator(original)
+        # N=1,V=0 makes GE false; Z=0 makes EQ false.
+        stock.reg_write(UC_ARM_REG_CPSR, 0x80000010)
+        stock.emu_start(offset, offset + 4, count=1)
+        check(stock.reg_read(UC_ARM_REG_PC) == offset + 4, f"Stock {label} can enter blocking path")
+
+    # Test the actual timeout continuation's log + return-value path, not just a branch address.
+    u = emulator(patched)
+    view = 0x10000000
+    u.reg_write(UC_ARM_REG_R6, view)
+    u.reg_write(UC_ARM_REG_R4, view + 0x100)
+    logs = []
+    def hook(uc, address, size, _):
+        if address == 0x12830F4:
+            logs.append(address)
+            uc.reg_write(UC_ARM_REG_PC, uc.reg_read(UC_ARM_REG_LR))
+        elif address == 0x11031B8:
+            raise AssertionError("Unexpected null dereference in timeout path")
+    u.hook_add(UC_HOOK_CODE, hook)
+    u.emu_start(0x128528C, 0x12852B0, count=100)
+    check(u.reg_read(UC_ARM_REG_R0) == 0 and len(logs) == 1,
+          "Firebase pending path returns false/completed through existing timeout continuation")
+
+    # Ads enumerator in r1 must survive dispatch into StartCoroutine, even if the
+    # configuration requested sequential initialization (r6=0).
+    for parallel in (0, 1):
+        u = emulator(patched)
+        u.reg_write(UC_ARM_REG_R6, parallel)
+        u.reg_write(UC_ARM_REG_R9, view)
+        u.reg_write(UC_ARM_REG_R1, view + 0x200)
+        u.emu_start(0x1286A20, 0x21A277C, count=10)
+        check(u.reg_read(UC_ARM_REG_PC) == 0x21A277C and
+              u.reg_read(UC_ARM_REG_R0) == view and u.reg_read(UC_ARM_REG_R1) == view + 0x200,
+              f"Ads use existing StartCoroutine with preserved enumerator (parallel={parallel})")
+
+    # The requests, ready/failure callbacks, consent and local scene-loading code
+    # must remain byte-identical outside the three explicitly approved sites.
+    expected = bytearray(original)
+    for offset, value in {0x128526C: '060000ea', 0x12859DC: 'f30000ea', 0x1286A24: '00f020e3'}.items():
+        expected[offset:offset+4] = bytes.fromhex(value)
+    for start, end in ((0x1284F04, 0x12853C0), (0x1285418, 0x1287070),
+                       (0x1283F5C, 0x128404C), (0x12846B4, 0x1284E3C)):
+        check(patched[start:end] == expected[start:end], f"Startup function {start:#x}: only intended wait edits")
+
+
 def main():
-    original = original_library(sys.argv[1])
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('original')
+    parser.add_argument('patched')
+    parser.add_argument('--fast-startup', action='store_true')
+    args = parser.parse_args()
+    original = original_library(args.original)
     check(hashlib.sha256(original).hexdigest() == ORIGINAL_HASH, "Original input library verified")
-    with zipfile.ZipFile(sys.argv[2]) as apk:
+    with zipfile.ZipFile(args.patched) as apk:
         library = apk.read(LIBRARY)
         manifest = dict(line.split('=', 1) for line in apk.read(MANIFEST).decode().splitlines() if '=' in line)
         check(manifest['format'] == '1', "Native loader manifest present")
@@ -118,7 +186,10 @@ def main():
             0x15B78AC: '0060a0e3', 0x15B77AC: '1eff2fe1',
         }.items():
             expected[offset:offset+4] = bytes.fromhex(replacement)
-        check(library == bytes(expected), "Final library contains exactly six intended edits; obsolete edits restored")
+        if args.fast_startup:
+            for offset, value in {0x128526C: '060000ea', 0x12859DC: 'f30000ea', 0x1286A24: '00f020e3'}.items():
+                expected[offset:offset+4] = bytes.fromhex(value)
+        check(library == bytes(expected), "Final library contains exactly the selected edits; obsolete edits restored")
         check(library[0x15B7750:0x15B77AC] == original[0x15B7750:0x15B77AC],
               "ClosePressed reward callback is byte-for-byte unchanged")
 
@@ -138,7 +209,17 @@ def main():
         check('NativeLibraries;->directory' in instructions[0].get_output(), "Resolver calls mounted-APK helper")
         for name in ('NativeLibraries', 'NativeLibraryStore'):
             check('Lapp/patchlab/extension/offlinegames/' + name + ';' in classes, f"{name} extension present")
+        load = next(m for m in player.get_methods() if m.get_name() == 'loadNative')
+        calls = list(load.get_instructions())
+        call = next(i for i, ins in enumerate(calls) if 'NativeLoader;->load(' in ins.get_output())
+        if args.fast_startup:
+            check([i.get_name() for i in calls[call:call+4]] ==
+                  ['invoke-static', 'move-result', 'if-eqz', 'invoke-static'] and
+                  'NativeLibraries;->verifyLoaded()' in calls[call+3].get_output(),
+                  "Actual mapped-library diagnostic runs only after NativeLoader success")
     execute_ui_blocks(library)
+    if args.fast_startup:
+        execute_startup_blocks(original, library)
     print('OUTPUT SHA-256', hashlib.sha256(library).hexdigest())
     print('Engine calls were stubbed; Android linker and full UI still require device verification.')
 

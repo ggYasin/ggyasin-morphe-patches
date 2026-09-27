@@ -5,8 +5,10 @@ import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.rawResourcePatch
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import java.security.MessageDigest
 
 private val nativeLibraryManifestPatch = rawResourcePatch {
@@ -59,6 +61,28 @@ internal val offlineGamesNativeLoaderPatch = bytecodePatch {
                     return-object p0
                 """.trimIndent(),
             )
+        }
+
+        val load = mutableClassDefBy("Lcom/unity3d/player/UnityPlayer;").methods.single {
+            it.name == "loadNative" && it.parameterTypes == listOf("Ljava/lang/String;") &&
+                it.returnType == "Ljava/lang/String;"
+        }
+        val instructions = load.instructions.toList()
+        fun calledMethod(index: Int) =
+            (instructions[index] as? ReferenceInstruction)?.reference as? MethodReference
+        if (instructions.indices.none { calledMethod(it)?.let { ref ->
+                ref.definingClass == helper && ref.name == "verifyLoaded"
+            } == true }) {
+            val call = instructions.indices.single { calledMethod(it)?.let { ref ->
+                ref.definingClass == "Lcom/unity3d/player/NativeLoader;" && ref.name == "load"
+            } == true }
+            check(instructions[call + 1].opcode == Opcode.MOVE_RESULT &&
+                instructions[call + 2].opcode == Opcode.IF_EQZ &&
+                instructions[call + 3].opcode == Opcode.INVOKE_STATIC &&
+                calledMethod(call + 3)?.returnType == "V") {
+                "Unexpected Unity load success path"
+            }
+            load.addInstructions(call + 3, "invoke-static {}, $helper->verifyLoaded()V")
         }
     }
 }

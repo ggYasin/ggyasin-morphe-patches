@@ -64,10 +64,34 @@ internal val houseAdStoreRedirect = NativeEdit(
     "30 48 2d e9", "1e ff 2f e1",
 )
 
+// InitializeFirebaseCo has already started Firebase and registered its completion
+// callback. Use the existing timeout continuation instead of yielding another frame
+// while Remote Config is pending. This is the 35% -> 40% loading-screen stage.
+internal val startupFirebaseWait = NativeEdit(
+    "LoaderView.InitializeFirebaseCo stop waiting", 0x128526C,
+    "06 00 00 aa", "06 00 00 ea",
+)
+
+// DetectCountryCode runs separately. Continue through the existing missing-country
+// path instead of blocking startup up to ten seconds for its callback.
+internal val startupCountryWait = NativeEdit(
+    "LoaderView.LoadCo stop waiting for country", 0x12859DC,
+    "f3 00 00 0a", "f3 00 00 ea",
+)
+
+// Preserve the enumerator and call the existing StartCoroutine parallel branch.
+// Consent/ad-permission checks still precede this point.
+internal val startupParallelAds = NativeEdit(
+    "LoaderView.LoadCo initialize ads in parallel", 0x1286A24,
+    "6c 00 00 0a", "00 f0 20 e3",
+)
+
+internal val startupEdits = listOf(startupFirebaseWait, startupCountryWait, startupParallelAds)
+
 private val currentEdits = listOf(
     rewardedAdFallback, rewardedAdDownload, houseAdHideCounter,
     houseAdShowClose, houseAdCounter, houseAdStoreRedirect,
-)
+) + startupEdits
 
 // Restore obsolete changes when upgrading an output from 1.2.x–1.4.1. In particular,
 // 0x15b7aa4 is IEnumerator.Reset (not OpenStorePage), and 0x17efe70 belongs to the
