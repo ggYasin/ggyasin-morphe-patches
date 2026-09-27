@@ -1,3 +1,9 @@
+## [1.6.1-dev.3](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.6.1-dev.2...v1.6.1-dev.3) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* version native loader classes when upgrading patched APKs ([27b0967](https://github.com/ggYasin/ggyasin-morphe-patches/commit/27b096732fdc2eab3c93285cfd1295d9e0b6408b))
+
 ## [1.6.1-dev.2](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.6.1-dev.1...v1.6.1-dev.2) (2026-09-27)
 
 ### 🐛 Bug Fixes
