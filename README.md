@@ -137,9 +137,15 @@ enables the close control, instead of running one one-second tween per remaining
 second.
 
 Both Offline Games patches are opt-in, and both support only `3.14.1` (`3204`)
-for ARMv7. Each verifies the exact `libil2cpp.so` size and SHA-256, requires its
-ARM instruction window to appear exactly once at the expected offset, and reads
-the result back before writing. Any unexpected binary is rejected unchanged.
+for ARMv7, from either the XAPK or the APKS form of the bundle. Each edit is
+matched against an exact instruction window at an exact offset in
+`libil2cpp.so`, and the write is read back before the library is saved. Anything
+whose code does not match a known window is rejected unchanged, and the error
+names the window, its offset and the library hash.
+
+An app that an earlier bundle of this project already patched can be patched
+again: each edit is applied only where it is still missing, so re-patching is a
+no-op rather than an error.
 
 The three ZenSMS patches are selected by default. The Offline Games patches are
 opt-in.
