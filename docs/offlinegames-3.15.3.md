@@ -65,3 +65,25 @@ ABI rejection, and legacy ARMv7 manifests.
 These are rebuilt-APK and isolated-instruction tests, not an Android device run.
 The prior on-device ad failure remains unconfirmed; retain the startup status
 message and process-map diagnostic when testing this version.
+
+## Reproduction results
+
+Using the CI-built `v1.6.0-dev.1` bundle with Morphe Desktop 1.17.0 / Patcher
+1.14.1, the supplied APKS was merged and patched without forced compatibility.
+Patching and rebuilding succeeded with all four selected patches and no failures.
+The output verifier passed on the actual rebuilt APK, including ARM64 execution
+of each modified control-flow block and verification of the loader's DEX hooks.
+
+- All four patches: `libil2cpp.so` SHA-256
+  `8712fcd81e74bf32e35eaa147fddda4961a6cceb4f0ff86dc7ad4aa0996f469e`.
+- Repatching that output produced the identical native library and loader manifest.
+- Fast startup alone: exactly three native edits, leaving all ad methods stock;
+  SHA-256 `71331812c6c7994bf62631862f48de63d390c66c7e4d3f252c34370c1769c04f`.
+- A 3.14.1 ARMv7 regression run with all four patches passed the existing output
+  verifier and retained SHA-256
+  `4f8b531d0240f7dcb6bd95708670610a629fb6eeae0537083ce71a3ed3a826e2`.
+
+The CI loader tests include ARM64 extraction, separate ARMv7/ARM64 cache
+identities, unsupported-ABI rejection, stale-cache repair, and runtime mapping
+classification. Local outputs were unsigned verification artifacts; Manager
+should use its own configured key for the user's installation or mount.
