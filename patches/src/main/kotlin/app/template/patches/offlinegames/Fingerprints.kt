@@ -11,8 +11,26 @@ import java.security.MessageDigest
 internal const val LIBRARY_PATH = "lib/armeabi-v7a/libil2cpp.so"
 
 private const val EXPECTED_LIBRARY_SIZE = 73_310_748
-private const val EXPECTED_LIBRARY_SHA256 =
-    "dd619f322538d339137e30a8c53e913ddecb59e78296ba86a79f058853ba0512"
+
+/**
+ * Libraries this project has produced before, kept only to name the input in an
+ * error message. The library is *not* gated on its hash: each edit already has
+ * to match an exact instruction window at an exact offset, which is a stricter
+ * and more precise check than a whole-file digest, and a hash gate would
+ * reject an app that an earlier bundle of this project had already patched.
+ */
+private val KNOWN_LIBRARY_HASHES = mapOf(
+    "dd619f322538d339137e30a8c53e913ddecb59e78296ba86a79f058853ba0512" to
+        "the original 3.14.1 library",
+    "cb47f0498be4c13765e6364ed99fae6c889339d07ddc5a37b1790228cb0c272f" to
+        "a library already patched by ggyasin-morphe-patches 1.2.x",
+    "f1d538cd1ba2b612165c152a4c894693d495753b9da34bcbf25b2e049c0996a0" to
+        "a library already patched by In-house ad only",
+    "ab3dab0e67b04d11ce4b0a63c9aa75f3b929d8e546a4112c0ceb5bba3ccbab84" to
+        "a library already patched by Instant in-house ad close",
+    "2a11f4585a436a38e98237ecfc6aae749dcd2be42913ddf0aebcda45d755eb45" to
+        "a library already patched by both Offline Games patches",
+)
 
 internal val OFFLINE_GAMES_COMPATIBILITY = Compatibility(
     name = "Offline Games",
@@ -28,21 +46,62 @@ internal val OFFLINE_GAMES_COMPATIBILITY = Compatibility(
 )
 
 /**
- * An ARM32 instruction window this project rewrites, with the file offset it is
- * expected at and why the window is unique.
- *
- * The window has to occur exactly once and at [expectedOffset], so a changed or
- * repacked library is rejected instead of being patched blindly.
+ * One instruction rewritten inside an [InstructionPatch]'s window.
  */
-internal class InstructionPatch(
-    val name: String,
-    val expectedOffset: Int,
+internal class InstructionEdit(
+    val offsetInWindow: Int,
     val original: ByteArray,
     val replacement: ByteArray,
 ) {
     init {
         require(original.size == replacement.size) {
-            "$name must not change the instruction size"
+            "An edit must not change the instruction size"
+        }
+    }
+}
+
+/**
+ * An ARM32 instruction window this project rewrites, with the file offset it is
+ * expected at and the edits applied inside it.
+ *
+ * The window identifies the code being changed: it has to appear exactly once
+ * in the library, at [expectedOffset]. Edits are tracked individually so a
+ * window that is already partly rewritten, because an earlier bundle of this
+ * project touched only part of it, is still recognised as the same code and only
+ * the missing edits are applied.
+ */
+internal class InstructionPatch(
+    val name: String,
+    val expectedOffset: Int,
+    val window: ByteArray,
+    val edits: List<InstructionEdit>,
+) {
+    init {
+        edits.forEach { edit ->
+            require(edit.offsetInWindow >= 0) { "$name has a negative edit offset" }
+            require(edit.offsetInWindow + edit.original.size <= window.size) {
+                "$name has an edit outside its window"
+            }
+        }
+    }
+
+    /**
+     * Every byte pattern this window is allowed to look like: the original with
+     * any subset of [edits] already applied. This is what makes a partly patched
+     * library recognisable without weakening the check on a foreign one.
+     *
+     * Two edits that happened to write the same bytes would produce equal
+     * patterns twice, which only costs a redundant comparison in the slow path.
+     */
+    val acceptableWindows: List<ByteArray> = buildList {
+        for (mask in 0 until (1 shl edits.size)) {
+            val variant = window.copyOf()
+            edits.forEachIndexed { index, edit ->
+                if (mask and (1 shl index) != 0) {
+                    edit.replacement.copyInto(variant, edit.offsetInWindow)
+                }
+            }
+            add(variant)
         }
     }
 }
@@ -66,8 +125,14 @@ internal class InstructionPatch(
 internal val rewardedAdRequestGate = InstructionPatch(
     name = "rewarded-ad request gate",
     expectedOffset = 0x17EFE6C,
-    original = hex("00 00 50 e3 12 00 00 0a 00 00 d6 e5 00 00 50 e3 04 00 00 1a"),
-    replacement = hex("00 00 50 e3 12 00 00 ea 00 00 d6 e5 00 00 50 e3 04 00 00 1a"),
+    window = hex("00 00 50 e3 12 00 00 0a 00 00 d6 e5 00 00 50 e3 04 00 00 1a"),
+    edits = listOf(
+        InstructionEdit(
+            offsetInWindow = 4,
+            original = hex("12 00 00 0a"), // beq  -> unconditional b
+            replacement = hex("12 00 00 ea"),
+        ),
+    ),
 )
 
 /**
@@ -91,8 +156,14 @@ internal val rewardedAdRequestGate = InstructionPatch(
 internal val houseAdCountdownEntry = InstructionPatch(
     name = "house-ad countdown entry",
     expectedOffset = 0x15B79BC,
-    original = hex("4c 00 95 e5 00 00 50 e3 05 00 00 ca 16 00 00 ea"),
-    replacement = hex("4c 00 95 e5 00 00 50 e3 17 00 00 ea 16 00 00 ea"),
+    window = hex("4c 00 95 e5 00 00 50 e3 05 00 00 ca 16 00 00 ea"),
+    edits = listOf(
+        InstructionEdit(
+            offsetInWindow = 8,
+            original = hex("05 00 00 ca"), // bgt -> unconditional b to the finished block
+            replacement = hex("17 00 00 ea"),
+        ),
+    ),
 )
 
 /**
@@ -104,28 +175,46 @@ internal val houseAdCountdownEntry = InstructionPatch(
  *     mov    r2, r7
  *     moveq  r1, #0xf         ; limit used when the flag is clear
  *
- * Both immediates become 1, so the limit no longer depends on the flag.
+ * Both immediates become 1, so the limit no longer depends on the flag. They are
+ * separate edits because the 1.2.x patch series only ever changed the `moveq`
+ * one, and an app carrying that change must still be recognised here.
  */
 internal val houseAdTimerLimit = InstructionPatch(
     name = "house-ad timer limit",
     expectedOffset = 0x17EFD0C,
-    original = hex("03 10 a0 e3 00 00 54 e3 07 20 a0 e1 0f 10 00 03"),
-    replacement = hex("01 10 a0 e3 00 00 54 e3 07 20 a0 e1 01 10 00 03"),
+    window = hex("03 10 a0 e3 00 00 54 e3 07 20 a0 e1 0f 10 00 03"),
+    edits = listOf(
+        InstructionEdit(
+            offsetInWindow = 0,
+            original = hex("03 10 a0 e3"), // mov r1, #3
+            replacement = hex("01 10 a0 e3"),
+        ),
+        InstructionEdit(
+            offsetInWindow = 12,
+            original = hex("0f 10 00 03"), // moveq r1, #15
+            replacement = hex("01 10 00 03"),
+        ),
+    ),
 )
 
 /**
  * Rewrites [patches] into [library], which is [LIBRARY_PATH] of the ARMv7
- * Offline Games 3.14.1 XAPK. That library lives in the XAPK's
- * `config.armeabi_v7a.apk` split, which the patcher resolves for us.
+ * Offline Games 3.14.1 bundle. That library lives in the XAPK's
+ * `config.armeabi_v7a.apk` split or the APKS `split_config.armeabi_v7a.apk`
+ * split, which the patcher resolves for us.
  *
- * The library is only written once every fingerprint has been matched, and the
- * write is read back, so an unexpected binary is never left half patched.
+ * Each edit is skipped when its replacement is already in place, so an app that
+ * an earlier bundle of this project already patched can be patched again instead
+ * of being rejected as an unknown binary. Anything whose code does not match a
+ * known window is refused, and the library is only written once every edit has
+ * been applied and read back, so an unexpected binary is never left half
+ * patched.
  */
 internal fun patchIl2CppLibrary(library: File, patches: List<InstructionPatch>) {
     if (!library.isFile) {
         throw PatchException(
             "Could not find $LIBRARY_PATH. This patch requires the ARMv7 " +
-                "Offline Games 3.14.1 XAPK.",
+                "Offline Games 3.14.1 XAPK or APKS.",
         )
     }
 
@@ -134,46 +223,64 @@ internal fun patchIl2CppLibrary(library: File, patches: List<InstructionPatch>) 
     if (bytes.size != EXPECTED_LIBRARY_SIZE) {
         throw PatchException(
             "Unsupported libil2cpp.so size. Expected $EXPECTED_LIBRARY_SIZE bytes, " +
-                "but found ${bytes.size}.",
+                "but found ${bytes.size}. This patch only supports the ARMv7 build.",
         )
     }
 
-    val actualHash = bytes.sha256()
-    if (actualHash != EXPECTED_LIBRARY_SHA256) {
-        throw PatchException(
-            "Unsupported libil2cpp.so. Expected SHA-256 $EXPECTED_LIBRARY_SHA256, " +
-                "but found $actualHash.",
-        )
-    }
+    val libraryHash = bytes.sha256()
 
     patches.forEach { patch ->
-        val matches = bytes.findMatches(patch.original)
-        if (matches.size != 1) {
-            val found = if (matches.isEmpty()) "found none" else "found 2 or more"
-            throw PatchException(
-                "Expected exactly one ${patch.name} signature, but $found. " +
-                    "The library was left unchanged.",
-            )
+        // Fast path: the window is already where it belongs, possibly with some
+        // of its edits applied by an earlier bundle of this project.
+        if (patch.acceptableWindows.any { bytes.matchesAt(patch.expectedOffset, it) }) {
+            patch.edits.forEach { edit ->
+                val offset = patch.expectedOffset + edit.offsetInWindow
+                if (!bytes.matchesAt(offset, edit.replacement)) {
+                    edit.replacement.copyInto(bytes, offset)
+                }
+            }
+            return@forEach
         }
 
-        val offset = matches.single()
-        if (offset != patch.expectedOffset) {
-            throw PatchException(
-                "${patch.name} moved unexpectedly: expected 0x" +
-                    patch.expectedOffset.toString(16) +
-                    ", found 0x" + offset.toString(16) + ".",
-            )
+        // Slow path: work out where the code went, so the error is actionable.
+        val elsewhere = patch.acceptableWindows
+            .flatMap { bytes.findMatches(it) }
+            .distinct()
+            .filter { it != patch.expectedOffset }
+
+        val found = when {
+            elsewhere.isEmpty() -> "it is not present anywhere in the library"
+            elsewhere.size == 1 -> "it was found at 0x${elsewhere.single().toString(16)}"
+            else -> "it was found at ${elsewhere.size} places"
         }
 
-        patch.replacement.copyInto(bytes, offset)
+        throw PatchException(
+            "Cannot patch ${patch.name}: expected its instructions at " +
+                "0x${patch.expectedOffset.toString(16)}, but $found. The library was " +
+                "left unchanged.\n" +
+                "libil2cpp.so SHA-256 $libraryHash, which is " +
+                "${KNOWN_LIBRARY_HASHES[libraryHash] ?: "not a library this project recognises"}.\n" +
+                "This patch only supports Offline Games 3.14.1 for ARMv7. Use the " +
+                "original, unpatched 3.14.1 XAPK or APKS.",
+        )
     }
 
-    if (!patches.all { bytes.matchesAt(it.expectedOffset, it.replacement) }) {
-        throw PatchException("Could not write the patched instructions.")
+    val unwritten = patches.filter { patch ->
+        patch.edits.any { edit ->
+            !bytes.matchesAt(patch.expectedOffset + edit.offsetInWindow, edit.replacement)
+        }
+    }
+    if (unwritten.isNotEmpty()) {
+        throw PatchException(
+            "Could not write the patched instructions for " +
+                unwritten.joinToString { it.name } +
+                " to libil2cpp.so (SHA-256 $libraryHash).",
+        )
     }
 
     library.writeBytes(bytes)
 }
+
 
 private fun ByteArray.findMatches(pattern: ByteArray, limit: Int = 2): List<Int> {
     if (pattern.isEmpty() || pattern.size > size) return emptyList()

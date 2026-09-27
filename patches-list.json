@@ -1,7 +1,35 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.3.0",
+  "version": "1.4.0-dev.3",
   "patches": [
+    {
+      "name": "Deactivate Firebase Analytics (9GAG 8.23.0)",
+      "description": "Optional: disables Firebase Analytics collection using its documented manifest setting. Does not remove Firebase services.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.ninegag.android.app",
+          "name": "9GAG",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": null,
+          "signatures": [
+            "85581f5f4501c97a2c8bfa6f8942cfa829b0fc2d531288d6d77ce16ff30e4219"
+          ],
+          "targets": [
+            {
+              "version": "8.23.0",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 27,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
     {
       "name": "Expanded OTP detection",
       "description": "Extends ZenSMS's original OTP extractor with universal and Persian patterns.",
@@ -115,6 +143,39 @@
               },
               "isExperimental": false,
               "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Remove 9GAG ads, promoted posts and trackers (8.23.0)",
+      "description": "Disables ad gates and bottom-banner initialization, filters promoted feed posts, and blocks listed ad/tracking hosts.",
+      "default": true,
+      "dependencies": [
+        "BytecodePatch",
+        "ResourcePatch",
+        "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.ninegag.android.app",
+          "name": "9GAG",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": null,
+          "signatures": [
+            "85581f5f4501c97a2c8bfa6f8942cfa829b0fc2d531288d6d77ce16ff30e4219"
+          ],
+          "targets": [
+            {
+              "version": "8.23.0",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 27,
               "description": null
             }
           ]

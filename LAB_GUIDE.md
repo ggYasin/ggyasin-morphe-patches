@@ -51,7 +51,8 @@ is removed first. Removing an installed app deletes its local application data.
 
 ## Patch Offline Games 3.14.1
 
-1. Select `offline_games.xapk` as the original app bundle.
+1. Select `offline_games.xapk` or `Offline_Games_3.14.1.apks` as the original app
+   bundle. Both carry the same `libil2cpp.so`.
 2. In Expert mode, enable the Offline Games patches you want:
    - **In-house ad only** stops the game from requesting rewarded ads, so its
      own cross-promotion is used every time.
@@ -63,6 +64,41 @@ is removed first. Removing an installed app deletes its local application data.
 5. Trigger a rewarded ad, for example an extra life, and confirm the in-house
    popup appears and can be closed straight away.
 
-Both patches require the exact ARMv7 `3.14.1` (`3204`) XAPK. They leave the
-library unchanged when its verified native signature or instruction windows do
-not match, and the reported message names what did not match.
+Both patches require the exact ARMv7 `3.14.1` (`3204`) bundle. An app that an
+earlier bundle of this project already patched can be patched again; only the
+edits that are still missing are applied, so re-patching is a no-op rather than
+an error.
+
+If a patch is refused, the message names the instruction window that did not
+match, the offset it was expected at, and the `libil2cpp.so` SHA-256. A hash of
+`cb47f049…` means the input is an app that the `One-second house-ad countdown`
+patch from versions up to 1.2.4 had already patched. A different hash that is
+not recognised means the input is not the `3.14.1` ARMv7 build; re-download the
+original rather than reusing a previously patched output.
+
+## Patch 9GAG 8.23.0
+
+1. Select `9GAG_8.23.0.apk` as the original app.
+2. In Expert mode, enable the 9GAG patches you want:
+   - **Remove 9GAG ads, promoted posts and trackers (8.23.0)** is on by default.
+   - **Deactivate Firebase Analytics (9GAG 8.23.0)** is optional and off by
+     default.
+3. Do not select the Adobo source at the same time. Its own 9GAG patch targets
+   8.17.5 and fails on 8.23.0 with a missing `res/layout/view_aatk_native.xml`.
+4. Patch and save the output, then install on an emulator or a disposable test
+   device.
+
+The patch is pinned to 9GAG `8.23.0` and to the official signing certificate, so
+a re-signed app is rejected rather than patched.
+
+These patches were statically verified against a patched APK, not observed
+running. A previous build was reported on-device as still showing a promoted
+post and a bottom banner, which motivated the banner, promoted-post and layout
+changes included here. Treat that as unconfirmed until you have run this build.
+Worth checking: Home, Top, Trending and Fresh feeds, scrolling and pagination,
+promoted cards after a refresh, the bottom banner on Home and on comment or
+swipe screens, opening comments and media, ordinary posting and voting, and
+login persistence.
+
+The blocked-host list is finite. It covers the hosts that were observed being
+requested for this version, not every tracker the app may use.

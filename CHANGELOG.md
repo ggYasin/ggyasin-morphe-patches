@@ -1,3 +1,21 @@
+## [1.4.0-dev.3](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.4.0-dev.2...v1.4.0-dev.3) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* accept an already-patched Offline Games library and report why not ([43f013f](https://github.com/ggYasin/ggyasin-morphe-patches/commit/43f013fd2993c36a6514a9209a2795735e04e62a))
+
+## [1.4.0-dev.2](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.4.0-dev.1...v1.4.0-dev.2) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* prepend rather than replace the boxed ad-gate return ([6bd9a5a](https://github.com/ggYasin/ggyasin-morphe-patches/commit/6bd9a5af8c9ec5f292fd8eb7fc0e7c7e0b6246dc))
+
+## [1.4.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.3.0...v1.4.0-dev.1) (2026-09-27)
+
+### ✨ New Features
+
+* add 9GAG 8.23.0 ad, promoted-post and tracker patches ([217dc96](https://github.com/ggYasin/ggyasin-morphe-patches/commit/217dc961c040a21fbc9c134f21531886002cde01))
+
 ## [1.3.0](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.2.4...v1.3.0) (2026-09-27)
 
 ### 🐛 Bug Fixes

@@ -19,3 +19,32 @@ provided that such references:
 - Are accurate, factual, and non-misleading;
 - Do not suggest authorship by the Morphe project; and
 - Appear only in a secondary or descriptive context, not as part of the product or project name.
+
+Third-party patches
+===================
+
+patches/src/main/kotlin/app/template/patches/ninegag/ is derived from the Adobo
+patch project, https://github.com/jkennethcarino/adobo, and is redistributed
+under the same GNU General Public License v3 as the rest of this repository.
+The upstream project and its authors retain copyright and attribution.
+
+Baseline commit recorded by the source this was ported from:
+a42ace2651824c26f95fdaed98fa5a7e7dd5eae2 (upstream release 1.5.0).
+
+Changes made in this repository:
+
+- Repackaged under app.template.patches.ninegag, from upstream's
+  dev.custom.ninegag823 naming, so the classes cannot collide with the upstream
+  patch set if both are ever present in the same session.
+- The four app.morphe.util helpers it borrowed (returnEarly,
+  returnBoxedBooleanEarly, findMutableMethodOf, getReference) were replaced with
+  local equivalents under patches/ninegag/util, so no code from the separate
+  morphe-patches-library artifact is vendored here. The byte-for-byte behaviour of
+  the original Adobo 9GAG patches is otherwise preserved.
+- Targets 9GAG 8.23.0 (com.ninegag.android.app, version code 80230000), with the
+  banner, promoted-post and layout changes from that version, which supersede the
+  earlier 8.17.5 baseline in upstream.
+
+The 9GAG application itself remains third-party software. It is not distributed
+with this repository and no ownership of it is claimed.
+
