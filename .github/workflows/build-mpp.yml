@@ -33,6 +33,7 @@ jobs:
         run: >-
           ./gradlew
           :extensions:extension:testDebugUnitTest
+          :extensions:offlinegames:testDebugUnitTest
           :patches:generatePatchesList
           --no-daemon
 
