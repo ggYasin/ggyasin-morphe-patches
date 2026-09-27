@@ -1,3 +1,9 @@
+## [1.4.0-dev.3](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.4.0-dev.2...v1.4.0-dev.3) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* accept an already-patched Offline Games library and report why not ([43f013f](https://github.com/ggYasin/ggyasin-morphe-patches/commit/43f013fd2993c36a6514a9209a2795735e04e62a))
+
 ## [1.4.0-dev.2](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.4.0-dev.1...v1.4.0-dev.2) (2026-09-27)
 
 ### 🐛 Bug Fixes
