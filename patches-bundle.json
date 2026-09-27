@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-27T08:12:24",
-  "description": "## [1.3.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.2.4...v1.3.0-dev.1) (2026-09-27)\n\n### 🐛 Bug Fixes\n\n* use one hex string per fingerprint ([0a33385](https://github.com/ggYasin/ggyasin-morphe-patches/commit/0a333855f24e7a5462dad8406f9a29252e973e40))\n\n### ✨ New Features\n\n* add Offline Games in-house ad patches ([a364456](https://github.com/ggYasin/ggyasin-morphe-patches/commit/a3644569b757de50357e1f12587fdb736ff0f3d3))",
-  "download_url": "https://github.com/ggYasin/ggyasin-morphe-patches/releases/download/v1.3.0-dev.1/patches-1.3.0-dev.1.mpp",
+  "created_at": "2026-09-27T08:17:00",
+  "description": "## [1.3.0](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.2.4...v1.3.0) (2026-09-27)\n\n### 🐛 Bug Fixes\n\n* use one hex string per fingerprint ([0a33385](https://github.com/ggYasin/ggyasin-morphe-patches/commit/0a333855f24e7a5462dad8406f9a29252e973e40))\n\n### ✨ New Features\n\n* add Offline Games in-house ad patches ([a364456](https://github.com/ggYasin/ggyasin-morphe-patches/commit/a3644569b757de50357e1f12587fdb736ff0f3d3))",
+  "download_url": "https://github.com/ggYasin/ggyasin-morphe-patches/releases/download/v1.3.0/patches-1.3.0.mpp",
   "signature_download_url": "",
-  "version": "1.3.0-dev.1"
+  "version": "1.3.0"
 }
