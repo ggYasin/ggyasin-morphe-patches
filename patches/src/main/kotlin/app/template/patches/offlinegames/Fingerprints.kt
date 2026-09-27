@@ -66,8 +66,8 @@ internal class InstructionPatch(
 internal val rewardedAdRequestGate = InstructionPatch(
     name = "rewarded-ad request gate",
     expectedOffset = 0x17EFE6C,
-    original = hex("000050e3" "1200000a" "0000d6e5" "000050e3" "0400001a"),
-    replacement = hex("000050e3" "120000ea" "0000d6e5" "000050e3" "0400001a"),
+    original = hex("00 00 50 e3 12 00 00 0a 00 00 d6 e5 00 00 50 e3 04 00 00 1a"),
+    replacement = hex("00 00 50 e3 12 00 00 ea 00 00 d6 e5 00 00 50 e3 04 00 00 1a"),
 )
 
 /**
@@ -91,8 +91,8 @@ internal val rewardedAdRequestGate = InstructionPatch(
 internal val houseAdCountdownEntry = InstructionPatch(
     name = "house-ad countdown entry",
     expectedOffset = 0x15B79BC,
-    original = hex("4c0095e5" "000050e3" "050000ca" "160000ea"),
-    replacement = hex("4c0095e5" "000050e3" "170000ea" "160000ea"),
+    original = hex("4c 00 95 e5 00 00 50 e3 05 00 00 ca 16 00 00 ea"),
+    replacement = hex("4c 00 95 e5 00 00 50 e3 17 00 00 ea 16 00 00 ea"),
 )
 
 /**
@@ -109,8 +109,8 @@ internal val houseAdCountdownEntry = InstructionPatch(
 internal val houseAdTimerLimit = InstructionPatch(
     name = "house-ad timer limit",
     expectedOffset = 0x17EFD0C,
-    original = hex("0310a0e3" "000054e3" "0720a0e1" "0f100003"),
-    replacement = hex("0110a0e3" "000054e3" "0720a0e1" "01100003"),
+    original = hex("03 10 a0 e3 00 00 54 e3 07 20 a0 e1 0f 10 00 03"),
+    replacement = hex("01 10 a0 e3 00 00 54 e3 07 20 a0 e1 01 10 00 03"),
 )
 
 /**
