@@ -52,10 +52,17 @@ is removed first. Removing an installed app deletes its local application data.
 ## Patch Offline Games 3.14.1
 
 1. Select `offline_games.xapk` as the original app bundle.
-2. In Expert mode, enable **One-second house-ad countdown**.
+2. In Expert mode, enable the Offline Games patches you want:
+   - **In-house ad only** stops the game from requesting rewarded ads, so its
+     own cross-promotion is used every time.
+   - **Instant in-house ad close** enables the in-house ad's close button
+     immediately, without waiting out its countdown.
 3. Patch and save the output.
-4. Test while completely offline, when the game falls back to its own
-   cross-promotion popup.
+4. Install on an emulator or a disposable test device. The patched set is signed
+   with Morphe's key, so an existing official install has to be removed first.
+5. Trigger a rewarded ad, for example an extra life, and confirm the in-house
+   popup appears and can be closed straight away.
 
-The patch requires the exact ARMv7 `3.14.1` (`3204`) XAPK and fails without
-modifying the library when its verified native signature does not match.
+Both patches require the exact ARMv7 `3.14.1` (`3204`) XAPK. They leave the
+library unchanged when its verified native signature or instruction windows do
+not match, and the reported message names what did not match.
