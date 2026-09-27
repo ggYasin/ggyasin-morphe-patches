@@ -1,3 +1,9 @@
+## [1.6.1-dev.2](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.6.1-dev.1...v1.6.1-dev.2) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* anchor native-loader success branch to the live method ([1a96e76](https://github.com/ggYasin/ggyasin-morphe-patches/commit/1a96e76e41c86797c6bd6fc2367f9859a89b8f3d))
+
 ## [1.6.1-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.6.0...v1.6.1-dev.1) (2026-09-27)
 
 ### 🐛 Bug Fixes
