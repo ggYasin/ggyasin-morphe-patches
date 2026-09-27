@@ -148,12 +148,14 @@ def verify(args):
         instructions = list(load.get_instructions())
         call = next(i for i, ins in enumerate(instructions) if 'NativeLoader;->load(' in ins.get_output())
         if strict_loader:
-            from verify_strict_loader import verify_dex
+            from verify_strict_loader import verify_dex, verify_extension
             verify_dex(player)
+            verify_extension(classes)
         else:
             check('NativeLibraries;->verifyLoaded()' in instructions[call+3].get_output(), 'Post-load diagnostic hook present')
         for name in ('NativeLibraryStore','NativeLibraries','NativeLoadStatus'):
-            check('Lapp/patchlab/extension/offlinegames/'+name+';' in classes, name+' present')
+            prefix='Lapp/patchlab/extension/offlinegames/' + ('strictv2/' if strict_loader else '')
+            check(prefix+name+';' in classes, name+' present')
     execute(original, data, args.fast_startup)
     print('OUTPUT SHA-256', hashlib.sha256(data).hexdigest())
     print('ARM64 instructions executed with engine calls stubbed; device behavior remains unverified.')

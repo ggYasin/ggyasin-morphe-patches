@@ -123,7 +123,8 @@ def verify_dex(player):
     output=[i.get_output() for i in ins]
     assert not any('Ljava/lang/System;->load' in s for s in output), 'Bare Java fallback remains'
     for name in ('loadMain','rejectMainFallback','finishLoad'):
-        assert sum('NativeLibraries;->'+name+'(' in s for s in output)==1,name
+        assert sum('/strictv2/NativeLibraries;->'+name+'(' in s for s in output)==1,name
+    assert not any('Lapp/patchlab/extension/offlinegames/NativeLibraries;' in s for s in output)
     assert not any('NativeLibraries;->verifyLoaded(' in s for s in output)
     call=next(i for i,s in enumerate(output) if 'NativeLoader;->load(' in s)
     assert [i.get_name() for i in ins[call:call+7]]==[
@@ -141,3 +142,15 @@ def verify_dex(player):
     assert old_target>indexed[call+8][0], 'Original failure must bypass ready flag'
     assert len(load.get_code().get_tries())==2, 'Original error-handling ranges were removed'
     print('PASS output DEX rejects Java fallback, checks native result before readiness, preserves try/catch')
+
+
+def verify_extension(classes):
+    prefix='Lapp/patchlab/extension/offlinegames/strictv2/'
+    for name in ('NativeLibraries','NativeLibraryStore','NativeLoadStatus'):
+        assert prefix+name+';' in classes, 'Missing versioned helper '+name
+    helper=classes[prefix+'NativeLibraries;']
+    names={m.get_name() for m in helper.get_methods()}
+    assert {'directory','loadMain','rejectMainFallback','finishLoad'} <= names
+    status=classes[prefix+'NativeLoadStatus;']
+    assert {'problem','unityProblem'} <= {m.get_name() for m in status.get_methods()}
+    print('PASS versioned extension contains the actual strict-loader implementation')

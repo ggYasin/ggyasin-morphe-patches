@@ -5,6 +5,7 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.nio.file.Files;
+import app.patchlab.extension.offlinegames.strictv2.NativeLoadStatus;
 import static org.junit.Assert.*;
 
 public class NativeLoadStatusTest {

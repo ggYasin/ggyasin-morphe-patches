@@ -51,13 +51,18 @@ internal val offlineGamesNativeLoaderPatch = bytecodePatch {
                 it.parameterTypes == listOf("Landroid/content/Context;") &&
                 it.returnType == "Ljava/lang/String;"
         }
-        val helper = "Lapp/patchlab/extension/offlinegames/NativeLibraries;"
+        val oldHelper = "Lapp/patchlab/extension/offlinegames/NativeLibraries;"
+        val helper = "Lapp/patchlab/extension/offlinegames/strictv2/NativeLibraries;"
         val references = method.instructions.filterIsInstance<ReferenceInstruction>().map { it.reference }
         val alreadyPatched = references.any { it.toString().startsWith("$helper->directory(") }
         if (!alreadyPatched) {
-            check(method.instructions.count() == 4 && references.filterIsInstance<FieldReference>().any {
+            val originalResolver = method.instructions.count() == 4 && references.filterIsInstance<FieldReference>().any {
                 it.definingClass == "Landroid/content/pm/ApplicationInfo;" && it.name == "nativeLibraryDir"
-            }) { "Unexpected Unity native-library path resolver; expected a supported Offline Games build" }
+            }
+            val oldResolver = method.instructions.count() == 3 && references.filterIsInstance<MethodReference>().any {
+                it.definingClass == oldHelper && it.name == "directory"
+            }
+            check(originalResolver || oldResolver) { "Unexpected Unity native-library path resolver" }
             method.removeInstructions(0, method.instructions.count())
             method.addInstructions(
                 0,
@@ -81,7 +86,8 @@ internal val offlineGamesNativeLoaderPatch = bytecodePatch {
         for ((oldName, newName) in listOf("load" to "loadMain", "loadLibrary" to "rejectMainFallback")) {
             val index = load.instructions.indexOfFirst { instruction ->
                 val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference
-                ref?.definingClass == "Ljava/lang/System;" && ref.name == oldName
+                (ref?.definingClass == "Ljava/lang/System;" && ref.name == oldName) ||
+                    (ref?.definingClass == oldHelper && ref.name == newName)
             }
             if (index >= 0) {
                 val call = load.instructions.elementAt(index) as FiveRegisterInstruction
@@ -95,8 +101,16 @@ internal val offlineGamesNativeLoaderPatch = bytecodePatch {
         // Repair outputs from 1.5.x/1.6.0: the old check displayed a toast but
         // allowed execution to continue even on a mismatch.
         load.instructions.indices.filter { reference(it)?.let { ref ->
-            ref.definingClass == helper && ref.name == "verifyLoaded"
+            ref.definingClass in setOf(helper, oldHelper) && ref.name == "verifyLoaded"
         } == true }.reversed().forEach { load.removeInstructions(it, 1) }
+
+        // Repair the short-lived dev.1/dev.2 gate too, which may reference a
+        // previous helper that extension merging cannot safely update in place.
+        load.instructions.indices.filter { reference(it)?.let { ref ->
+            ref.definingClass == oldHelper && ref.name == "finishLoad"
+        } == true }.forEach {
+            load.replaceInstruction(it, "invoke-static {v2}, $helper->finishLoad(Z)Ljava/lang/String;")
+        }
 
         if (load.instructions.indices.none { reference(it)?.let { ref ->
             ref.definingClass == helper && ref.name == "finishLoad"

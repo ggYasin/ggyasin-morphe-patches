@@ -33,6 +33,15 @@ All Offline Games patches share this loader dependency:
 5. A `loader=strict-v2` manifest marker plus the changed libmain hash creates a
    new staging-directory identity. Old cached files cannot stand in for this
    loader. Repatching a supported already-patched APK is supported.
+6. The strict runtime uses a new `offlinegames.strictv2` class namespace. Morphe's
+   extension merge can retain existing method implementations, so reusing the old
+   namespace would leave upgraded APKs calling old helper code. Loader calls are
+   redirected to the new classes; old unused classes may remain in prior DEX files.
+
+The rebuilt-APK verification caught and corrected a local smali-label relocation
+error in the first prerelease. The success branch is constructed with an explicit
+label in the live method, and its **actual output branch target** is tested.
+Use the stable build, not the early dev.1/dev.2 artifacts.
 
 | ABI | File offset | Stock | New | Failure continuation |
 |---|---|---|---|---|

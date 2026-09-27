@@ -1,4 +1,4 @@
-package app.patchlab.extension.offlinegames;
+package app.patchlab.extension.offlinegames.strictv2;
 
 import android.content.Context;
 import android.os.Handler;
