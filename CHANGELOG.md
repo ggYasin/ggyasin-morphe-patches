@@ -1,3 +1,9 @@
+## [1.4.2](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.4.1...v1.4.2) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* load patched Unity libraries for mounted Offline Games ([c86d9df](https://github.com/ggYasin/ggyasin-morphe-patches/commit/c86d9df1df49b106fa44833fb8e389c345ec634e))
+
 ## [1.4.2-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.4.1...v1.4.2-dev.1) (2026-09-27)
 
 ### 🐛 Bug Fixes

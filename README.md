@@ -33,7 +33,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.4.2-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.4.2-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;8 patches total
+> **[v1.4.2](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.4.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;8 patches total
 <details open>
 <summary>📦 9GAG&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
