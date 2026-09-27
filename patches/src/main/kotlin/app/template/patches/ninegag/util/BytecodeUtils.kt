@@ -63,8 +63,10 @@ inline fun <reified T : Reference> Instruction.getReference() =
 /**
  * Replaces the whole method body with `return <value>`.
  *
- * Uses the same instruction-replacement approach as the other patches in this
- * project rather than the patcher's return-override helper.
+ * This replaces the body outright, which is safe for the ad-gate getter it is
+ * used on: that method is a plain static state-flow read with no exception
+ * handlers. Use [returnBoxedBooleanEarly] for a coroutine, which must not have
+ * its body deleted.
  *
  * @receiver MutableMethod The method to replace the body of.
  * @param value The value to return.
@@ -76,10 +78,16 @@ fun MutableMethod.returnEarly(value: Boolean) {
 }
 
 /**
- * Replaces the whole method body with a boxed Boolean return, for a
- * continuation-style `invokeSuspend` that must yield an object.
+ * Prepends a boxed Boolean return to this method, for a continuation-style
+ * `invokeSuspend` that must yield an object.
  *
- * @receiver MutableMethod The method to replace the body of.
+ * The original body is deliberately left in place rather than removed. A
+ * coroutine's `MoveNext` is a state machine wrapped in exception handlers, and
+ * deleting its instructions would leave the try/catch ranges pointing at
+ * addresses that no longer exist. The prepended `return-object` makes the rest
+ * unreachable, which is the same shape the original helper produced.
+ *
+ * @receiver MutableMethod The method to add the return to.
  * @param value The value to box and return.
  */
 fun MutableMethod.returnBoxedBooleanEarly(value: Boolean) {
@@ -87,10 +95,14 @@ fun MutableMethod.returnBoxedBooleanEarly(value: Boolean) {
         "Expected a boxed boolean return type, found $returnType"
     }
 
+    checkNotNull(implementation) {
+        throw PatchException("Cannot add a return to an abstract or native method")
+    }
+
     val constant = if (value) "TRUE" else "FALSE"
-    replaceBodyWith(
-        "sget-object v0, Ljava/lang/Boolean;->$constant:Ljava/lang/Boolean;",
-        "return-object v0",
+    addInstructions(
+        0,
+        "sget-object v0, Ljava/lang/Boolean;->$constant:Ljava/lang/Boolean;\nreturn-object v0",
     )
 }
 
