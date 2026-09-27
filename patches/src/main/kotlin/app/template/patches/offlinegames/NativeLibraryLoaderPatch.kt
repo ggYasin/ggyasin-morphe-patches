@@ -7,6 +7,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.rawResourcePatch
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21t
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -112,11 +113,21 @@ internal val offlineGamesNativeLoaderPatch = bytecodePatch {
             load.addInstructions(call + 2, """
                 invoke-static {v2}, $helper->finishLoad(Z)Ljava/lang/String;
                 move-result-object v1
-                if-eqz v1, :patchlab_verified
+                nop
                 return-object v1
-                :patchlab_verified
                 nop
             """.trimIndent())
         }
+        // Build the branch against the destination in THIS method. Parsed local
+        // smali labels can retain offsets from the temporary assembly method.
+        val finish = load.instructions.indices.single { reference(it)?.let { ref ->
+            ref.definingClass == helper && ref.name == "finishLoad"
+        } == true }
+        check(load.instructions[finish + 1].opcode == Opcode.MOVE_RESULT_OBJECT &&
+            load.instructions[finish + 3].opcode == Opcode.RETURN_OBJECT &&
+            load.instructions[finish + 4].opcode == Opcode.NOP) { "Unexpected native verification gate" }
+        load.replaceInstruction(finish + 2, BuilderInstruction21t(
+            Opcode.IF_EQZ, 1, load.implementation!!.newLabelForIndex(finish + 4),
+        ))
     }
 }

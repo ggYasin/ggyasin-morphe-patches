@@ -131,5 +131,13 @@ def verify_dex(player):
     assert 'NativeLibraries;->finishLoad(Z)' in output[call+2]
     # Original Unity readiness call follows the new early-error return gate.
     assert ins[call+7].get_name()=='if-eqz' and ins[call+8].get_name()=='invoke-static'
+    indexed=list(load.get_instructions_idx())
+    branch_address,branch=indexed[call+4]
+    target=branch_address+2*branch.get_ref_off()
+    assert target==indexed[call+6][0], f'Verified branch lands at {target:#x}, not the success continuation'
+    assert indexed[call+5][1].get_output()=='v1', 'Error must return finishLoad message'
+    old_address,old_branch=indexed[call+7]
+    old_target=old_address+2*old_branch.get_ref_off()
+    assert old_target>indexed[call+8][0], 'Original failure must bypass ready flag'
     assert len(load.get_code().get_tries())==2, 'Original error-handling ranges were removed'
     print('PASS output DEX rejects Java fallback, checks native result before readiness, preserves try/catch')
