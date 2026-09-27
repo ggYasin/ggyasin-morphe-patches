@@ -2,15 +2,7 @@ package app.template.patches.offlinegames
 
 import app.morphe.patcher.patch.rawResourcePatch
 
-/**
- * Makes the in-house ad inert to taps. The ad's own click handler builds an
- * Intent around a store URI and starts it, so a stray tap sends the player to
- * the Play Store. Returning from that handler immediately leaves the tap with
- * nothing to do.
- *
- * Only the redirect is removed. The ad still shows, the countdown still runs,
- * and the close button is untouched.
- */
+/** Disables HouseAdPopupView.OpenStorePage, preserving ClosePressed and its reward callback. */
 @Suppress("unused")
 val inHouseAdNotClickablePatch = rawResourcePatch(
     name = "In-house ad not clickable",
@@ -20,6 +12,7 @@ val inHouseAdNotClickablePatch = rawResourcePatch(
     default = false,
 ) {
     compatibleWith(OFFLINE_GAMES_COMPATIBILITY)
+    dependsOn(offlineGamesNativeLoaderPatch)
 
     execute {
         patchIl2CppLibrary(this[LIBRARY_PATH], listOf(houseAdStoreRedirect))

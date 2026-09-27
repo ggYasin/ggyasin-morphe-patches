@@ -33,7 +33,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.4.1](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.4.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;8 patches total
+> **[v1.4.2-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.4.2-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;8 patches total
 <details open>
 <summary>📦 9GAG&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -80,7 +80,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 |----------|----------------|-----------|
 | [In-house ad not clickable](#in-house-ad-not-clickable) | Stops the in-house ad from opening the Play Store when tapped, so an accidental click does not leave the game. The ad and its close button are otherwise unchanged. |  |
 | [In-house ad only](#in-house-ad-only) | Stops Offline Games from requesting rewarded ads, so the game always falls back to its own in-house ad. Banners and interstitials are untouched. |  |
-| [Instant in-house ad close](#instant-in-house-ad-close) | Removes the in-house ad countdown so its close button is usable straight away. Applies three independent bypasses of the wait: skipping the loop, subtracting the whole counter each tick, and shortening the tick. Also shortens the in-house ad timer to one second. |  |
+| [Instant in-house ad close](#instant-in-house-ad-close) | Shows the house-ad close button on opening, hides the countdown, and initializes its counter as complete. Loads patched native code for mounted installs. |  |
 
 </details>
 
@@ -120,50 +120,34 @@ its state in app-private local preferences.
 
 ### In-house ad only
 
-Stops Offline Games from requesting rewarded ads, so the game always falls back
-to its own in-house ad instead of the game's ad network. The request call is the
-only thing removed; the surrounding flow and the code that runs afterwards are
-untouched, and banners and interstitials keep working.
+Routes the shared rewarded-ad decision to the game's existing house-ad fallback
+and disables the dedicated rewarded-ad download adapter. The callback is already
+initialized before the redirect. Banner and interstitial adapters are separate.
 
 ### Instant in-house ad close
 
-Removes the wait before the in-house ad's close button becomes usable, and
-shortens the in-house ad timer to one second. This is the game's own house ad,
-the cross-promotion shown when a rewarded ad cannot be loaded, not a
-third-party ad-provider timer.
-
-The countdown is a coroutine in the popup view. Its counter is deserialized from
-the popup prefab, so the value cannot be changed from code and the wait has to be
-removed instead. Three independent bypasses are applied together, so a single
-missed one cannot leave the ad unusable:
-
-- **No wait loop** — the coroutine branches straight to its finish block, so the
-  close control is enabled on the same frame the popup opens.
-- **15 per tick** — the per-tick subtraction covers the whole counter, so it
-  reaches zero on the first tick.
-- **Fast tick** — the one-second wait becomes about two milliseconds, so the
-  loop finishes inside a frame even though it is left intact.
-
-The close control is still enabled by the game's own finish block, so the
-countdown and the button keep their normal relationship.
+Activates the house-ad close button when the popup opens, hides its countdown
+wrapper, and initializes the counter to zero. The normal close handler and its
+reward callback are preserved. This applies to the shared Save-me/hint house-ad
+popup across the collection.
 
 ### In-house ad not clickable
 
-Stops a tap on the in-house ad from opening the Play Store. The ad's click
-handler builds an Intent around a store URI and starts it, which is an easy way
-to leave the game by accident; that handler now returns immediately. The ad
-itself, its countdown and its close button are untouched.
+Makes the verified `HouseAdPopupView.OpenStorePage()` handler return immediately.
+The close handler remains functional.
 
 All three Offline Games patches are opt-in, and all support only `3.14.1`
-(`3204`) for ARMv7, from either the XAPK or the APKS form of the bundle. Each
-edit is matched against an exact instruction window at an exact offset in
-`libil2cpp.so`, and the write is read back before the library is saved. Anything
-whose code does not match a known window is rejected unchanged, and the error
-names the window, its offset and the library hash.
+(`3204`) for ARMv7, from either the XAPK or APKS. A normalized whole-library
+SHA-256 check accepts original and known previously patched inputs, while
+rejecting unknown changes. Obsolete edits from earlier releases are restored.
 
-An app that an earlier bundle of this project already patched can be patched
-again: each edit is applied only where it is still missing, so re-patching is a
-no-op rather than an error.
+**Mounted installations:** all three depend on a shared Unity native loader fix.
+Unity normally loads Android's extracted original libraries, which mounting only
+the base APK does not update. The fix extracts and verifies the Unity libraries
+from the mounted APK into an app-private, content-addressed directory and points
+Unity there. First launch requires roughly 88 MB extra storage. Repatch and
+replace the mount after updating the source; a source update alone cannot change
+the running game. See [native-loading investigation and device checks](docs/offlinegames-native-loading.md).
 
 The three ZenSMS patches are selected by default. The Offline Games patches are
 opt-in.
@@ -206,7 +190,7 @@ Firebase service is removed.
 Run the **Build MPP** GitHub Actions workflow, or build locally with:
 
 ```shell
-./gradlew :extensions:extension:testDebugUnitTest :patches:buildAndroid
+./gradlew :extensions:extension:testDebugUnitTest :extensions:offlinegames:testDebugUnitTest :patches:buildAndroid
 ```
 
 The bundle is written under `patches/build/libs/`. See [LAB_GUIDE.md](LAB_GUIDE.md)

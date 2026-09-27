@@ -10,8 +10,9 @@ val inHouseAdOnlyPatch = rawResourcePatch(
     default = false,
 ) {
     compatibleWith(OFFLINE_GAMES_COMPATIBILITY)
+    dependsOn(offlineGamesNativeLoaderPatch)
 
     execute {
-        patchIl2CppLibrary(this[LIBRARY_PATH], listOf(rewardedAdRequestGate))
+        patchIl2CppLibrary(this[LIBRARY_PATH], listOf(rewardedAdFallback, rewardedAdDownload))
     }
 }

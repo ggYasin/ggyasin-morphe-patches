@@ -53,34 +53,30 @@ is removed first. Removing an installed app deletes its local application data.
 
 1. Select `offline_games.xapk` or `Offline_Games_3.14.1.apks` as the original app
    bundle. Both carry the same `libil2cpp.so`.
-2. In Expert mode, enable the Offline Games patches you want. All three are
-   opt-in, so in Simple mode none of them run and the app behaves exactly as if
-   unpatched.
+2. In Expert mode, explicitly select the Offline Games patches you want:
    - **In-house ad only** stops the game from requesting rewarded ads, so its
      own cross-promotion is used every time.
-   - **Instant in-house ad close** removes the wait before the in-house ad's
-     close button becomes usable, using three independent bypasses at once.
+   - **Instant in-house ad close** activates the close button when the popup
+     opens, hides the countdown wrapper and sets the counter to zero.
    - **In-house ad not clickable** stops a tap on the in-house ad from opening
      the Play Store.
 3. Patch and save the output.
-4. Install on an emulator or a disposable test device. The patched set is signed
-   with Morphe's key, so an existing official install has to be removed first.
+4. For root/mount use, replace the existing mount with this newly patched output,
+   force-stop the game and start it again. The shared native-loader dependency
+   stages verified libraries from the mounted APK, so it no longer uses the
+   original extracted native code. Allow about 88 MB additional private storage
+   on first launch. For a standalone install, use a test device/profile; the
+   publisher-signed installation cannot be updated with Morphe's signing key.
 5. Trigger a rewarded ad, for example **Save me** in the game-over screen or a
    rewarded-video hint, and confirm the in-house popup appears and can be closed
    straight away. With **In-house ad not clickable** enabled, tapping the ad
    itself should do nothing.
 
-All three patches require the exact ARMv7 `3.14.1` (`3204`) bundle. An app that an
-earlier bundle of this project already patched can be patched again; only the
-edits that are still missing are applied, so re-patching is a no-op rather than
-an error.
-
-If a patch is refused, the message names the instruction window that did not
-match, the offset it was expected at, and the `libil2cpp.so` SHA-256. A hash of
-`cb47f049…` means the input is an app that the `One-second house-ad countdown`
-patch from versions up to 1.2.4 had already patched. A different hash that is
-not recognised means the input is not the `3.14.1` ARMv7 build; re-download the
-original rather than reusing a previously patched output.
+All three patches require the exact ARMv7 `3.14.1` (`3204`) library. Known earlier
+edits are accepted and obsolete ones repaired; unknown changes are rejected.
+A `PatchLabOfflineGames` logcat message identifies the verified library path.
+If the countdown still runs, capture that log and the process's `libil2cpp.so`
+mapping using the commands in [the native-loading guide](docs/offlinegames-native-loading.md).
 
 ## Patch 9GAG 8.23.0
 
