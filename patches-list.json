@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "patches": [
     {
       "name": "Deactivate Firebase Analytics (9GAG 8.23.0)",
@@ -62,6 +62,34 @@
       "options": []
     },
     {
+      "name": "In-house ad not clickable",
+      "description": "Stops the in-house ad from opening the Play Store when tapped, so an accidental click does not leave the game. The ad and its close button are otherwise unchanged.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.JindoBlu.OfflineGames",
+          "name": "Offline Games",
+          "description": null,
+          "apkFileType": "XAPK_REQUIRED",
+          "appIconColor": "#263238",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "3.14.1",
+              "versionCodes": {
+                "ARMEABI_V7A": 3204
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "In-house ad only",
       "description": "Stops Offline Games from requesting rewarded ads, so the game always falls back to its own in-house ad. Banners and interstitials are untouched.",
       "default": false,
@@ -91,7 +119,7 @@
     },
     {
       "name": "Instant in-house ad close",
-      "description": "Removes the in-house ad countdown so its close button is usable straight away, and shortens the in-house ad timer to one second.",
+      "description": "Removes the in-house ad countdown so its close button is usable straight away. Applies three independent bypasses of the wait: skipping the loop, subtracting the whole counter each tick, and shortening the tick. Also shortens the in-house ad timer to one second.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [

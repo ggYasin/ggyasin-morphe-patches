@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-27T09:20:16",
-  "description": "## [1.4.0](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.3.0...v1.4.0) (2026-09-27)\n\n### 🐛 Bug Fixes\n\n* accept an already-patched Offline Games library and report why not ([43f013f](https://github.com/ggYasin/ggyasin-morphe-patches/commit/43f013fd2993c36a6514a9209a2795735e04e62a))\n* prepend rather than replace the boxed ad-gate return ([6bd9a5a](https://github.com/ggYasin/ggyasin-morphe-patches/commit/6bd9a5af8c9ec5f292fd8eb7fc0e7c7e0b6246dc))\n\n### ✨ New Features\n\n* add 9GAG 8.23.0 ad, promoted-post and tracker patches ([217dc96](https://github.com/ggYasin/ggyasin-morphe-patches/commit/217dc961c040a21fbc9c134f21531886002cde01))",
-  "download_url": "https://github.com/ggYasin/ggyasin-morphe-patches/releases/download/v1.4.0/patches-1.4.0.mpp",
+  "created_at": "2026-09-27T10:08:22",
+  "description": "## [1.4.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.4.0...v1.4.1) (2026-09-27)\n\n### 🐛 Bug Fixes\n\n* three independent in-house ad wait bypasses and a no-op store redirect ([1a4a4d0](https://github.com/ggYasin/ggyasin-morphe-patches/commit/1a4a4d0c497ba0a967dcffc33c1813d6417c8ebb))",
+  "download_url": "https://github.com/ggYasin/ggyasin-morphe-patches/releases/download/v1.4.1/patches-1.4.1.mpp",
   "signature_download_url": "",
-  "version": "1.4.0"
+  "version": "1.4.1"
 }

@@ -1,3 +1,9 @@
+## [1.4.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.4.0...v1.4.1) (2026-09-27)
+
+### 🐛 Bug Fixes
+
+* three independent in-house ad wait bypasses and a no-op store redirect ([1a4a4d0](https://github.com/ggYasin/ggyasin-morphe-patches/commit/1a4a4d0c497ba0a967dcffc33c1813d6417c8ebb))
+
 ## [1.4.0](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.3.0...v1.4.0) (2026-09-27)
 
 ### 🐛 Bug Fixes
