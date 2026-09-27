@@ -33,7 +33,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.4.2](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.4.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;8 patches total
+> **[v1.5.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.5.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
 <details open>
 <summary>📦 9GAG&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -68,7 +68,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 </details>
 
 <details open>
-<summary>📦 Offline Games&nbsp;&nbsp;•&nbsp;&nbsp;3 patches</summary>
+<summary>📦 Offline Games&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -78,6 +78,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
+| [Fast Offline Games startup](#fast-offline-games-startup) | Stops the loading screen waiting for Firebase/Remote Config and country lookup, and initializes ads in the background. Network requests may continue after startup. |  |
 | [In-house ad not clickable](#in-house-ad-not-clickable) | Stops the in-house ad from opening the Play Store when tapped, so an accidental click does not leave the game. The ad and its close button are otherwise unchanged. |  |
 | [In-house ad only](#in-house-ad-only) | Stops Offline Games from requesting rewarded ads, so the game always falls back to its own in-house ad. Banners and interstitials are untouched. |  |
 | [Instant in-house ad close](#instant-in-house-ad-close) | Shows the house-ad close button on opening, hides the countdown, and initializes its counter as complete. Loads patched native code for mounted installs. |  |

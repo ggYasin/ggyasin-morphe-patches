@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.4.2",
+  "version": "1.5.0-dev.1",
   "patches": [
     {
       "name": "Deactivate Firebase Analytics (9GAG 8.23.0)",
@@ -51,6 +51,36 @@
                 "ARMEABI_V7A": 141,
                 "X86_64": 141,
                 "X86": 141
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Fast Offline Games startup",
+      "description": "Stops the loading screen waiting for Firebase/Remote Config and country lookup, and initializes ads in the background. Network requests may continue after startup.",
+      "default": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.JindoBlu.OfflineGames",
+          "name": "Offline Games",
+          "description": null,
+          "apkFileType": "XAPK_REQUIRED",
+          "appIconColor": "#263238",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "3.14.1",
+              "versionCodes": {
+                "ARMEABI_V7A": 3204
               },
               "isExperimental": false,
               "minSdk": null,
