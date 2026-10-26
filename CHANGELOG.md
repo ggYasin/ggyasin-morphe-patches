@@ -1,3 +1,9 @@
+## [1.8.0](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.7.0...v1.8.0) (2026-10-26)
+
+### ✨ New Features
+
+* **zensms:** port all 3 patches to 1.2.16 build 153 ([01efa9d](https://github.com/ggYasin/ggyasin-morphe-patches/commit/01efa9d38da101e8599c21dd762403f1afcbaeaf))
+
 ## [1.8.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.7.0...v1.8.0-dev.1) (2026-10-26)
 
 ### ✨ New Features
