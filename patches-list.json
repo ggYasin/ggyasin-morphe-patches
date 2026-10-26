@@ -1,9 +1,9 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.6.0",
+  "version": "1.7.0-dev.1",
   "patches": [
     {
-      "name": "Deactivate Firebase Analytics (9GAG 8.23.0)",
+      "name": "Deactivate Firebase Analytics (9GAG)",
       "description": "Optional: disables Firebase Analytics collection using its documented manifest setting. Does not remove Firebase services.",
       "default": false,
       "dependencies": [],
@@ -18,6 +18,13 @@
             "85581f5f4501c97a2c8bfa6f8942cfa829b0fc2d531288d6d77ce16ff30e4219"
           ],
           "targets": [
+            {
+              "version": "8.26.1",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 27,
+              "description": null
+            },
             {
               "version": "8.23.0",
               "versionCodes": null,
@@ -251,7 +258,7 @@
       "options": []
     },
     {
-      "name": "Remove 9GAG ads, promoted posts and trackers (8.23.0)",
+      "name": "Remove 9GAG ads, promoted posts and trackers",
       "description": "Disables ad gates and bottom-banner initialization, filters promoted feed posts, and blocks listed ad/tracking hosts.",
       "default": true,
       "dependencies": [
@@ -271,6 +278,13 @@
             "85581f5f4501c97a2c8bfa6f8942cfa829b0fc2d531288d6d77ce16ff30e4219"
           ],
           "targets": [
+            {
+              "version": "8.26.1",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 27,
+              "description": null
+            },
             {
               "version": "8.23.0",
               "versionCodes": null,
