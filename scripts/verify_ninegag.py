@@ -85,7 +85,8 @@ def decode(apk, args, work):
 
 def canonical(element):
     return (element.tag, tuple(sorted(element.attrib.items())),
-            (element.text or "").strip(), tuple(canonical(c) for c in element))
+            (element.text or "").strip(), (element.tail or "").strip(),
+            tuple(canonical(c) for c in element))
 
 
 def xml(path):

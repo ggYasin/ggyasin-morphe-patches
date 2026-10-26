@@ -16,7 +16,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 
 - App: ZenSMS
 - Package: `com.zensms.app`
-- Version: `1.2.04` (`141`)
+- Versions: `1.2.16` (`153`), `1.2.04` (`141`)
 - Input format: XAPK
 
 - App: Offline Games
@@ -32,7 +32,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.7.0](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.7.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
+> **[v1.8.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.8.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
 <details open>
 <summary>📦 9GAG&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -55,8 +55,8 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 
 **🎯 Supported versions:**
 
-| 1.2.04 |
-| :---: |
+| 1.2.16 | 1.2.04 |
+| :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
@@ -194,9 +194,10 @@ It does four things:
   hosts is rewritten to `0.0.0.0` in both string constants and bytecode string
   references. This is a finite list, not proof that every tracker is blocked.
 
-Every fingerprint is validated against the exact instruction shape before it is
-edited, and each edit is required to match exactly one method, so a changed
-build is rejected rather than patched blindly.
+Version-specific targets are checked against validated signatures, instruction
+counts, and semantic references before editing. Candidates must be unique, so a
+changed build is rejected rather than patched blindly. These guards are not a
+whole-method instruction hash.
 
 Both 8.26.1 configurations (main-only and optional Analytics) pass 39 static
 checks against rebuilt signed APKs. Device behavior is not yet verified. See

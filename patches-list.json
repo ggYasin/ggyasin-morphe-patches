@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.7.0",
+  "version": "1.8.0-dev.1",
   "patches": [
     {
       "name": "Deactivate Firebase Analytics (9GAG)",
@@ -51,6 +51,18 @@
           "appIconColor": "#0066CC",
           "signatures": null,
           "targets": [
+            {
+              "version": "1.2.16",
+              "versionCodes": {
+                "ARM64_V8A": 153,
+                "ARMEABI_V7A": 153,
+                "X86_64": 153,
+                "X86": 153
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
             {
               "version": "1.2.04",
               "versionCodes": {
@@ -241,6 +253,18 @@
           "signatures": null,
           "targets": [
             {
+              "version": "1.2.16",
+              "versionCodes": {
+                "ARM64_V8A": 153,
+                "ARMEABI_V7A": 153,
+                "X86_64": 153,
+                "X86": 153
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
               "version": "1.2.04",
               "versionCodes": {
                 "ARM64_V8A": 141,
@@ -311,6 +335,18 @@
           "appIconColor": "#0066CC",
           "signatures": null,
           "targets": [
+            {
+              "version": "1.2.16",
+              "versionCodes": {
+                "ARM64_V8A": 153,
+                "ARMEABI_V7A": 153,
+                "X86_64": 153,
+                "X86": 153
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
             {
               "version": "1.2.04",
               "versionCodes": {
