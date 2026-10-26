@@ -31,7 +31,7 @@ Manager as the app to handle it.
 
 1. In Morphe Manager, select ZenSMS.
 2. Use Expert mode so patch selection is visible.
-3. Choose `ZenSMS_1.2.04.xapk` when prompted for the original app bundle.
+3. Choose `ZenSMS_1.2.16.xapk` (or `ZenSMS_1.2.04.xapk`) when prompted for the original app bundle.
 4. Enable the patches you want to test:
    - **Enable premium state** changes the existing premium-state checks.
    - **Expanded OTP detection** keeps ZenSMS's original handler and adds

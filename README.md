@@ -16,7 +16,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 
 - App: ZenSMS
 - Package: `com.zensms.app`
-- Version: `1.2.04` (`141`)
+- Versions: `1.2.16` (`153`), `1.2.04` (`141`)
 - Input format: XAPK
 
 - App: Offline Games
