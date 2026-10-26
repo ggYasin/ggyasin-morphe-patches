@@ -32,7 +32,7 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.7.0](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.7.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
+> **[v1.8.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.8.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
 <details open>
 <summary>📦 9GAG&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -55,8 +55,8 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 
 **🎯 Supported versions:**
 
-| 1.2.04 |
-| :---: |
+| 1.2.16 | 1.2.04 |
+| :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
