@@ -90,19 +90,19 @@ mapping using the commands in [the native-loading guide](docs/offlinegames-nativ
 For startup testing, compare warm launches offline, online, and online with the
 app blocked by the firewall, as described in [the startup guide](docs/offlinegames-startup.md).
 
-## Patch 9GAG 8.23.0
+## Patch 9GAG 8.26.1 or 8.23.0
 
-1. Select `9GAG_8.23.0.apk` as the original app.
+1. Select the original `9GAG_8.26.1.apk` (recommended) or `9GAG_8.23.0.apk`.
 2. In Expert mode, enable the 9GAG patches you want:
-   - **Remove 9GAG ads, promoted posts and trackers (8.23.0)** is on by default.
-   - **Deactivate Firebase Analytics (9GAG 8.23.0)** is optional and off by
+   - **Remove 9GAG ads, promoted posts and trackers** is on by default.
+   - **Deactivate Firebase Analytics (9GAG)** is optional and off by
      default.
 3. Do not select the Adobo source at the same time. Its own 9GAG patch targets
    8.17.5 and fails on 8.23.0 with a missing `res/layout/view_aatk_native.xml`.
 4. Patch and save the output, then install on an emulator or a disposable test
    device.
 
-The patch is pinned to 9GAG `8.23.0` and to the official signing certificate, so
+The patch is pinned to 9GAG `8.26.1` and `8.23.0`, and to the official signing certificate, so
 a re-signed app is rejected rather than patched.
 
 These patches were statically verified against a patched APK, not observed
