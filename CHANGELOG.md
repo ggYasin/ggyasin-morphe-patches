@@ -1,3 +1,9 @@
+## [1.7.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.6.1-dev.3...v1.7.0-dev.1) (2026-10-26)
+
+### ✨ New Features
+
+* **ninegag:** support 8.26.1 with validated nullable ad policy ([23fd1d8](https://github.com/ggYasin/ggyasin-morphe-patches/commit/23fd1d8b10b035d02bc8f2509d44fee7e4436ecb))
+
 ## [1.6.1-dev.3](https://github.com/ggYasin/ggyasin-morphe-patches/compare/v1.6.1-dev.2...v1.6.1-dev.3) (2026-09-27)
 
 ### 🐛 Bug Fixes

@@ -32,20 +32,20 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.6.1-dev.3](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.6.1-dev.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
+> **[v1.7.0-dev.1](https://github.com/ggYasin/ggyasin-morphe-patches/releases/tag/v1.7.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;9 patches total
 <details open>
 <summary>📦 9GAG&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
 
 **🎯 Supported versions:**
 
-| 8.23.0 |
-| :---: |
+| 8.26.1 | 8.23.0 |
+| :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Deactivate Firebase Analytics (9GAG 8.23.0)](#deactivate-firebase-analytics-9gag-8-23-0) | Optional: disables Firebase Analytics collection using its documented manifest setting. Does not remove Firebase services. |  |
-| [Remove 9GAG ads, promoted posts and trackers (8.23.0)](#remove-9gag-ads-promoted-posts-and-trackers-8-23-0) | Disables ad gates and bottom-banner initialization, filters promoted feed posts, and blocks listed ad/tracking hosts. |  |
+| [Deactivate Firebase Analytics (9GAG)](#deactivate-firebase-analytics-9gag) | Optional: disables Firebase Analytics collection using its documented manifest setting. Does not remove Firebase services. |  |
+| [Remove 9GAG ads, promoted posts and trackers](#remove-9gag-ads-promoted-posts-and-trackers) | Disables ad gates and bottom-banner initialization, filters promoted feed posts, and blocks listed ad/tracking hosts. |  |
 
 </details>
 
