@@ -194,9 +194,10 @@ It does four things:
   hosts is rewritten to `0.0.0.0` in both string constants and bytecode string
   references. This is a finite list, not proof that every tracker is blocked.
 
-Every fingerprint is validated against the exact instruction shape before it is
-edited, and each edit is required to match exactly one method, so a changed
-build is rejected rather than patched blindly.
+Version-specific targets are checked against validated signatures, instruction
+counts, and semantic references before editing. Candidates must be unique, so a
+changed build is rejected rather than patched blindly. These guards are not a
+whole-method instruction hash.
 
 Both 8.26.1 configurations (main-only and optional Analytics) pass 39 static
 checks against rebuilt signed APKs. Device behavior is not yet verified. See
