@@ -16,6 +16,7 @@ internal val OFFLINE_GAMES_COMPATIBILITY = Compatibility(
     apkFileType = ApkFileType.XAPK_REQUIRED,
     appIconColor = 0x263238,
     targets = listOf(
+        AppTarget(version = "3.16.1", versionCodes = mapOf(SupportedAbi.ARM64_V8A to 3418)),
         AppTarget(version = "3.15.3", versionCodes = mapOf(SupportedAbi.ARM64_V8A to 3327)),
         AppTarget(version = "3.14.1", versionCodes = mapOf(SupportedAbi.ARMEABI_V7A to 3204)),
     ),
@@ -139,12 +140,31 @@ private val nativeBuilds = listOf(
             NativeEdit(startupParallelAds.name, 0x2577360, "95 0a 00 36", "1f 20 03 d5"),
         ),
     ),
+    // Remapped from 3.15.3 by relocation-masked code signatures; LoadMaxSdkAd by its
+    // IL2CPP method-pointer slot (12 neighbouring class methods identical). Field offsets
+    // (+0x70/+0x80/+0x98) are unchanged. The rewarded branch is 4 bytes longer than in
+    // 3.15.3 because the closure call gained an argument.
+    NativeBuild(
+        "3.16.1", "arm64-v8a", 97_686_832,
+        "859a5941bf4fa850835ae664bda95641f3e080dcd2663b5be7caa4dce702ac48",
+        listOf(
+            NativeEdit(rewardedAdFallback.name, 0x2D8EE78, "e0 00 00 36", "3f 00 00 14"),
+            NativeEdit(rewardedAdDownload.name, 0x2891344, "fe 57 be a9", "c0 03 5f d6"),
+            NativeEdit(houseAdHideCounter.name, 0x2BB5150, "e1 d7 9f 1a", "e1 03 1f 2a"),
+            NativeEdit(houseAdShowClose.name, 0x2BB516C, "e1 17 9f 1a", "21 00 80 52"),
+            NativeEdit(houseAdCounter.name, 0x2BB596C, "08 10 40 b9", "e8 03 1f 2a"),
+            NativeEdit(houseAdStoreRedirect.name, 0x2BB5880, "fe 0f 1e f8", "c0 03 5f d6"),
+            NativeEdit(startupFirebaseWait.name, 0x2876E28, "0a 01 00 54", "08 00 00 14"),
+            NativeEdit(startupCountryWait.name, 0x2877764, "60 26 00 36", "33 01 00 14"),
+            NativeEdit(startupParallelAds.name, 0x2877F44, "75 09 00 36", "1f 20 03 d5"),
+        ),
+    ),
 )
 
 internal fun ResourcePatchContext.offlineGamesBuild(): NativeBuild {
     val version = packageMetadata.versionName
     return nativeBuilds.singleOrNull { it.version == version && this[it.path].isFile }
-        ?: throw PatchException("Unsupported Offline Games $version native build. Use 3.15.3 ARM64 or 3.14.1 ARMv7, with the complete APKS/XAPK.")
+        ?: throw PatchException("Unsupported Offline Games $version native build. Use 3.16.1 or 3.15.3 ARM64, or 3.14.1 ARMv7, with the complete APKS/XAPK.")
 }
 
 internal fun ResourcePatchContext.patchOfflineGamesLibrary(selected: List<NativeEdit>) {

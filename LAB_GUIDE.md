@@ -49,9 +49,10 @@ The patched APK set is signed with Morphe's configured key. It cannot update an
 official ZenSMS installation signed by the publisher unless that installation
 is removed first. Removing an installed app deletes its local application data.
 
-## Patch Offline Games 3.15.3 or 3.14.1
+## Patch Offline Games 3.16.1, 3.15.3 or 3.14.1
 
-1. Select `Offline Games_3.15.3.apks` (ARM64, version code `3327`). The older
+1. Select the complete Offline Games `3.16.1` bundle (ARM64, version code `3418`;
+   base plus `config.arm64_v8a` split). `Offline Games_3.15.3.apks` (ARM64, `3327`) and the older
    `offline_games.xapk` / `Offline_Games_3.14.1.apks` (ARMv7, `3204`) remains
    supported. Use the complete bundle, including the native split.
 2. In Expert mode, explicitly select the Offline Games patches you want:
@@ -75,11 +76,11 @@ is removed first. Removing an installed app deletes its local application data.
    straight away. With **In-house ad not clickable** enabled, tapping the ad
    itself should do nothing.
 
-All four patches require the verified ARM64 `3.15.3` (`3327`) or ARMv7 `3.14.1`
+All four patches require the verified ARM64 `3.16.1` (`3418`) or `3.15.3` (`3327`), or ARMv7 `3.14.1`
 (`3204`) library. Known earlier edits are accepted and obsolete ones repaired;
 unknown changes or unsupported version/architecture combinations are rejected.
-A startup toast and `PatchLabOfflineGames` logcat message verify actual mappings
-for all three Unity libraries **after** loading. Basename fallbacks are disabled;
+A `PatchLabOfflineGames` logcat message verifies actual mappings for all three
+Unity libraries **after** loading (no success toast is shown on launch). Basename fallbacks are disabled;
 a mismatch stops startup with Unity's error dialog instead of running stock code.
 Capture that dialog or the saved `patchlab-native-load-error.txt` report from
 `Android/data/com.JindoBlu.OfflineGames/files/` if it fails. Its actual path is
@@ -90,9 +91,9 @@ mapping using the commands in [the native-loading guide](docs/offlinegames-nativ
 For startup testing, compare warm launches offline, online, and online with the
 app blocked by the firewall, as described in [the startup guide](docs/offlinegames-startup.md).
 
-## Patch 9GAG 8.26.1 or 8.23.0
+## Patch 9GAG 8.29.03, 8.26.1 or 8.23.0
 
-1. Select the original `9GAG_8.26.1.apk` (recommended) or `9GAG_8.23.0.apk`.
+1. Select the original 9GAG `8.29.03` APK (recommended), `9GAG_8.26.1.apk` or `9GAG_8.23.0.apk`.
 2. In Expert mode, enable the 9GAG patches you want:
    - **Remove 9GAG ads, promoted posts and trackers** is on by default.
    - **Deactivate Firebase Analytics (9GAG)** is optional and off by
@@ -102,7 +103,7 @@ app blocked by the firewall, as described in [the startup guide](docs/offlinegam
 4. Patch and save the output, then install on an emulator or a disposable test
    device.
 
-The patch is pinned to 9GAG `8.26.1` and `8.23.0`, and to the official signing certificate, so
+The patch is pinned to 9GAG `8.29.03`, `8.26.1` and `8.23.0`, and to the official signing certificate, so
 a re-signed app is rejected rather than patched.
 
 These patches were statically verified against a patched APK, not observed

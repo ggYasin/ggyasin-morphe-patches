@@ -64,13 +64,13 @@ not established. No new ad-function guesses were added for that report.
 The shared native-loader extension now runs `verifyLoaded()` **after**
 `NativeLoader.load(directory)` succeeds. It reads `/proc/self/maps` and requires
 all `libil2cpp.so` mappings to point into the expected content-addressed directory.
-A startup toast and `PatchLabOfflineGames` log report either:
+A `PatchLabOfflineGames` log reports either (since the 3.16.1 update the success
+case is log-only; failures still show a toast, Unity's error dialog and a report):
 
 - `PatchLab: patched native code loaded`
 - `PatchLab: native code NOT verified — export the patched APK and log`
 
-No message means the diagnostic hook itself may not be active (or the toast was
-missed); logcat and the exported APK are the next evidence. A positive message
+No log line means the diagnostic hook itself may not be active; logcat and the exported APK are the next evidence. A positive message
 proves the expected file is mapped, **not** that every ad UI path is correct.
 
 ## Validation and device comparison
@@ -91,7 +91,7 @@ Measure after one warm launch (first launch stages native files) in each mode:
 2. Internet available and app allowed.
 3. Internet available and app blocked by the firewall.
 
-Record source version, startup status toast, time from launch to usable menu,
+Record source version, the `PatchLabOfflineGames` status line, time from launch to usable menu,
 whether 35–40% stalls, and whether Save-me/hints still count down. Capture
 `adb logcat -d -s PatchLabOfflineGames:I` and the exported patched APK if the
 loading path or ad result remains unchanged. Keep saved-game data; no wipe is

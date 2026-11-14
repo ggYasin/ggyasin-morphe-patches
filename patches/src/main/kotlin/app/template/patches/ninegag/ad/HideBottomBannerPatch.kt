@@ -11,6 +11,7 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import app.template.patches.ninegag.shared.COMPATIBILITY_NINEGAG
+import app.template.patches.ninegag.shared.NINEGAG_SYMBOLS
 
 /**
  * Prevents the app-owned bottom-adhesion banner initializer from registering its
@@ -25,10 +26,11 @@ val hideBottomBannerPatch = bytecodePatch {
     compatibleWith(COMPATIBILITY_NINEGAG)
 
     execute {
-        val latest = packageMetadata.versionName == "8.26.1"
-        val bannerClass = if (latest) "Lg3b;" else "Lo02;"
+        val symbols = NINEGAG_SYMBOLS[packageMetadata.versionName]
+        val latest = symbols != null
+        val bannerClass = symbols?.bannerClass ?: "Lo02;"
         val bannerMethod = if (latest) "f" else "i"
-        val callbackClass = if (latest) "Li04;" else "Lmc;"
+        val callbackClass = symbols?.bannerCallback ?: "Lmc;"
         val candidates = mutableListOf<Pair<ClassDef, Method>>()
         val expectedFlags = AccessFlags.PUBLIC.value or
             AccessFlags.STATIC.value or AccessFlags.FINAL.value
@@ -48,13 +50,13 @@ val hideBottomBannerPatch = bytecodePatch {
                 val strings = references.filterIsInstance<StringReference>()
                     .map { it.string }
                 val calls = references.filterIsInstance<MethodReference>()
-                val identityMatches = if (latest) {
+                val identityMatches = if (symbols != null) {
                     method.implementation?.registerCount == 11 &&
                         method.implementation?.instructions?.count() == 54 &&
                         references.filterIsInstance<FieldReference>().any {
-                            it.definingClass == "Le38;" && it.name == "adview_banner_binding" && it.type == "I"
+                            it.definingClass == symbols.bannerIds && it.name == "adview_banner_binding" && it.type == "I"
                         } && calls.any {
-                            it.definingClass == "Lkl0;" && it.name == "<init>" &&
+                            it.definingClass == symbols.bannerBinding && it.name == "<init>" &&
                                 it.parameterTypes.map { type -> type.toString() } ==
                                 listOf("Landroid/widget/FrameLayout;", callbackClass)
                         }

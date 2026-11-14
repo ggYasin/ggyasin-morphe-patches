@@ -32,6 +32,9 @@ internal const val AD_HOSTS = """
     api.mixpanel.com
     sdkapi.dsp-api.moloco.com
     sdkopmetrics-us.dsp-api.moloco.com
+    ads.pubmatic.com
+    ow.pubmatic.com
+    owsdk.pubmatic.com
     pubnative.net
     api.rlcdn.com
     smaato.com

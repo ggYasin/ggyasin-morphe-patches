@@ -1,5 +1,6 @@
-/* Static DEX inspection helper for verify_ninegag.py. Requires the Morphe CLI
- * fat jar (dexlib2 and apksig) and JDK 21. Run through the Python entry point. */
+/* Static DEX inspection helper for verify_ninegag.py. Arguments: APK, hosts
+ * file, target-method file. Requires the Morphe CLI fat jar (dexlib2 and
+ * apksig) and JDK 21. Run through the Python entry point. */
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -14,15 +15,9 @@ import com.android.tools.smali.dexlib2.iface.value.StringEncodedValue;
 import com.android.apksig.ApkVerifier;
 
 public class NinegagVerifier {
-    static final Set<String> TARGETS = Set.of(
-        "Ld44;->j(ILjava/lang/String;Z)Ljava/util/List;",
-        "Ld44;->d(Ljava/lang/String;IIIZ)Lqy7;",
-        "Lg3b;->f(Landroid/widget/FrameLayout;Li04;)V",
-        "Lgb;->b(ZLo57;Lib;)Lfa;",
-        "Lgb;->a(ZZLo57;ZLib;)Lfa;",
-        "Lgb;->c()Lfa;",
-        "Lgb;->d()Z",
-        "Lja;->invokeSuspend(Ljava/lang/Object;)Ljava/lang/Object;");
+    // Version-specific method descriptors to dump in full, one per line
+    // (args[2]); verify_ninegag.py selects them from the original APK's version.
+    static Set<String> TARGETS = Set.of();
     static String quote(String s) {
         StringBuilder b = new StringBuilder("\"");
         for (char c : s.toCharArray()) {
@@ -71,6 +66,17 @@ public class NinegagVerifier {
                 if (!n.startsWith("get") || getter.getParameterCount() != 0 ||
                         n.equals("getOpcode") || n.equals("getCodeUnits")) continue;
                 Object v = getter.invoke(i);
+                if (v instanceof List<?> xs && xs.stream().allMatch(x -> x instanceof SwitchElement)) {
+                    // Switch payload elements have identity toString(); compare
+                    // their (key, relative target) values instead.
+                    List<Object> elements = new ArrayList<>();
+                    for (Object x : xs) {
+                        SwitchElement e = (SwitchElement) x;
+                        elements.add(Arrays.asList(e.getKey(), e.getOffset()));
+                    }
+                    out.put(n.substring(3), elements);
+                    continue;
+                }
                 out.put(n.substring(3), v instanceof Number ? v : String.valueOf(v));
             }
         }
@@ -94,6 +100,9 @@ public class NinegagVerifier {
     }
     public static void main(String[] args) throws Exception {
         Set<String> blocked = new HashSet<>(Files.readAllLines(Path.of(args[1])));
+        TARGETS = new HashSet<>(Files.readAllLines(Path.of(args[2])));
+        TARGETS.remove("");
+        if (TARGETS.isEmpty()) throw new IllegalArgumentException("No target methods given");
         Map<String,Integer> classes = new TreeMap<>();
         Map<String,Object> schemas = new TreeMap<>(), methods = new TreeMap<>();
         Map<String,String> strings = new TreeMap<>();

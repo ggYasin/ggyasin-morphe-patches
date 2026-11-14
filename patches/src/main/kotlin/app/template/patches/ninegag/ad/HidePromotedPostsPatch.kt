@@ -13,6 +13,7 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import app.template.patches.ninegag.shared.COMPATIBILITY_NINEGAG
+import app.template.patches.ninegag.shared.NINEGAG_SYMBOLS
 
 val hidePromotedPostsPatch = bytecodePatch(
     description = "Uses the existing feed query filter to hide promoted posts."
@@ -20,9 +21,10 @@ val hidePromotedPostsPatch = bytecodePatch(
     compatibleWith(COMPATIBILITY_NINEGAG)
 
     execute {
-        val latest = packageMetadata.versionName == "8.26.1"
-        val queryClass = if (latest) "Ld44;" else "Lhx3;"
-        val builderType = if (latest) "Lqy7;" else "Lwm7;"
+        val symbols = NINEGAG_SYMBOLS[packageMetadata.versionName]
+        val latest = symbols != null
+        val queryClass = symbols?.feedQueryClass ?: "Lhx3;"
+        val builderType = symbols?.feedQueryBuilder ?: "Lwm7;"
         val builderParameters = if (latest)
             listOf("Ljava/lang/String;", "I", "I", "I", "Z")
         else listOf("I", "Ljava/lang/String;", "I", "I", "Z")

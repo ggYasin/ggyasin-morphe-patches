@@ -21,12 +21,12 @@ turning on **Pre-release patches** in the source's options follows `dev`.
 
 - App: Offline Games
 - Package: `com.JindoBlu.OfflineGames`
-- Versions: `3.15.3` (`3327`, `arm64-v8a`), `3.14.1` (`3204`, `armeabi-v7a`)
+- Versions: `3.16.1` (`3418`, `arm64-v8a`), `3.15.3` (`3327`, `arm64-v8a`), `3.14.1` (`3204`, `armeabi-v7a`)
 - Input format: complete APKS or XAPK bundle
 
 - App: 9GAG
 - Package: `com.ninegag.android.app`
-- Versions: `8.26.1` (`80260100`), `8.23.0` (`80230000`)
+- Versions: `8.29.03` (`80290300`), `8.26.1` (`80260100`), `8.23.0` (`80230000`)
 - Input format: APK
 
 ## Patches
@@ -144,7 +144,7 @@ game's existing parallel path. Requests can continue in the background; this
 does not disable the game's internet access. Cached/default configuration and
 normal consent handling remain available. See the [startup analysis](docs/offlinegames-startup.md).
 
-All four Offline Games patches are opt-in and support `3.15.3` (`3327`) ARM64
+All four Offline Games patches are opt-in and support `3.16.1` (`3418`) and `3.15.3` (`3327`) ARM64
 and `3.14.1` (`3204`) ARMv7, from a complete XAPK or APKS. Each build has its own
 independently verified native instruction table. A normalized whole-library
 SHA-256 check accepts original and known previously patched inputs, while

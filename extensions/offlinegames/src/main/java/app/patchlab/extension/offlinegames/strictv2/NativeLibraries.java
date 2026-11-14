@@ -72,9 +72,9 @@ public final class NativeLibraries {
                     "\nStock-library fallback is disabled. The native loader does not expose its dlerror here; " +
                     "the mappings below identify missing or unexpected libraries.", maps);
         }
-        String status = "PatchLab: patched native code loaded";
-        Log.i(TAG, status + "\nExpected: " + expectedDirectory + "\n" + maps);
-        showStatus(status);
+        // Success is logged only; no launch toast. Failures still show a toast, Unity's
+        // error dialog and the saved report.
+        Log.i(TAG, "PatchLab: patched native code loaded\nExpected: " + expectedDirectory + "\n" + maps);
         return null;
     }
 

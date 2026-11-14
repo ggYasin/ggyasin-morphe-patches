@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static regression checks against REAL 9GAG 8.26.1 APKs (no device/mocks).
+"""Static regression checks against REAL 9GAG 8.26.1/8.29.03 APKs (no device/mocks).
 
 Usage:
   python3 scripts/verify_ninegag.py ORIGINAL.apk PATCHED.apk \
@@ -31,12 +31,32 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 A = "{http://schemas.android.com/apk/res/android}"
-DISPLAY = "Ld44;->j(ILjava/lang/String;Z)Ljava/util/List;"
-DATABASE = "Ld44;->d(Ljava/lang/String;IIIZ)Lqy7;"
-BANNER = "Lg3b;->f(Landroid/widget/FrameLayout;Li04;)V"
-POLICY = "Lgb;->b(ZLo57;Lib;)Lfa;"
-GATE_CALLERS = ("Lgb;->a(ZZLo57;ZLib;)Lfa;", "Lgb;->c()Lfa;",
-                "Lgb;->d()Z", "Lja;->invokeSuspend(Ljava/lang/Object;)Ljava/lang/Object;")
+# Raw DEX descriptors per supported release (mirrors ninegag/shared/Symbols.kt).
+# The selected row is chosen from the ORIGINAL APK's versionName/versionCode.
+VERSIONS = {
+    "8.26.1": {
+        "code": "80260100",
+        "display": "Ld44;->j(ILjava/lang/String;Z)Ljava/util/List;",
+        "database": "Ld44;->d(Ljava/lang/String;IIIZ)Lqy7;",
+        "banner": "Lg3b;->f(Landroid/widget/FrameLayout;Li04;)V",
+        "policy": "Lgb;->b(ZLo57;Lib;)Lfa;",
+        "blocker": "Lfa;->a:Lfa;",
+        "gate_callers": ("Lgb;->a(ZZLo57;ZLib;)Lfa;", "Lgb;->c()Lfa;", "Lgb;->d()Z",
+                         "Lja;->invokeSuspend(Ljava/lang/Object;)Ljava/lang/Object;"),
+    },
+    "8.29.03": {
+        "code": "80290300",
+        "display": "Lha4;->j(ILjava/lang/String;Z)Ljava/util/List;",
+        "database": "Lha4;->d(Ljava/lang/String;IIIZ)Ljb8;",
+        "banner": "Lj62;->f(Landroid/widget/FrameLayout;Lk64;)V",
+        "policy": "Ljb;->b(ZLah7;Llb;)Lja;",
+        "blocker": "Lja;->a:Lja;",
+        "gate_callers": ("Ljb;->a(ZZLah7;ZLlb;)Lja;", "Ljb;->c()Lja;", "Ljb;->d()Z",
+                         "Lma;->invokeSuspend(Ljava/lang/Object;)Ljava/lang/Object;",
+                         # New 8.29.03 direct b() consumer (LiveRamp ATS request config).
+                         "Ldx5;->invoke()Ljava/lang/Object;"),
+    },
+}
 LAYOUTS = tuple("res/layout/" + n + ".xml" for n in (
     "activity_home_v2", "activity_simple_fragment_holder",
     "activity_standalone_swipe", "activity_swipe_post_comment"))
@@ -58,14 +78,14 @@ def run(command):
     return result.stdout
 
 
-def snapshot(apk, args, work, hosts):
+def snapshot(apk, args, work, hosts, targets):
     source = ROOT / "scripts/NinegagVerifier.java"
     key = hashlib.sha256((digest(apk) + digest(source) + digest(args.cli_jar)
-                          + digest(hosts)).encode()).hexdigest()
+                          + digest(hosts) + digest(targets)).encode()).hexdigest()
     destination = work / ("dex-" + key + ".json")
     if not destination.exists():
         output = run([args.java, "-Xmx3g", "--class-path", args.cli_jar,
-                      source, apk, hosts])
+                      source, apk, hosts, targets])
         json.loads(output)  # Never cache failed/partial extractor output.
         destination.write_text(output)
     return json.loads(destination.read_text())
@@ -81,6 +101,18 @@ def decode(apk, args, work):
         run([args.apktool, "d", "-f", "-s", "-o", destination, apk])
         marker.write_text(key)
     return destination
+
+
+def versions(directory):
+    # apktool moves versionName/versionCode out of XML into apktool.yml.
+    text = (directory / "apktool.yml").read_text()
+    found = []
+    for key in ("versionName", "versionCode"):
+        match = re.search(r"^  " + key + r":\s*(.*?)\s*$", text, re.M)
+        if not match:
+            raise ValueError(f"apktool.yml lacks {key}: {directory}")
+        found.append(match.group(1).strip("'\""))
+    return tuple(found)
 
 
 def canonical(element):
@@ -133,8 +165,21 @@ def verify(args, work):
     hostfile.write_text("\n".join(sorted(hosts)) + "\n")
     print("INPUT original_sha256=" + digest(args.original), flush=True)
     print("INPUT patched_sha256=" + digest(args.patched), flush=True)
-    before = snapshot(args.original, args, work, hostfile)
-    after = snapshot(args.patched, args, work, hostfile)
+    source_res = decode(args.original, args, work)
+    output_res = decode(args.patched, args, work)
+    original_version, output_version = versions(source_res), versions(output_res)
+    if original_version[0] not in VERSIONS:
+        raise ValueError("Unsupported original 9GAG version: " + original_version[0])
+    release = original_version[0]
+    v = VERSIONS[release]
+    DISPLAY, DATABASE, BANNER, POLICY = v["display"], v["database"], v["banner"], v["policy"]
+    GATE_CALLERS = v["gate_callers"]
+    print("INPUT release=" + release, flush=True)
+    targets = (DISPLAY, DATABASE, BANNER, POLICY, *GATE_CALLERS)
+    targetfile = work / ("targets-" + hashlib.sha256("\n".join(targets).encode()).hexdigest() + ".txt")
+    targetfile.write_text("\n".join(targets) + "\n")
+    before = snapshot(args.original, args, work, hostfile, targetfile)
+    after = snapshot(args.patched, args, work, hostfile, targetfile)
     check(after["signature_verified"], "output APK signature verifies", after["signature_errors"] if not after["signature_verified"] else "")
     check(before["dex_count"] > 0 and after["dex_count"] > 0, "input and output contain DEX")
     check(all(v == 1 for v in before["classes"].values()), "original has no duplicate class definitions")
@@ -150,11 +195,11 @@ def verify(args, work):
           str(changed_schemas[:8]) if changed_schemas else "")
     for target in (DISPLAY, DATABASE, BANNER, POLICY, *GATE_CALLERS):
         if target not in before["methods"] or target not in after["methods"]:
-            raise ValueError("Required 8.26.1 method missing: " + target)
+            raise ValueError(f"Required {release} method missing: " + target)
     original_display = before["methods"][DISPLAY]
     patched_display = after["methods"][DISPLAY]
     check(original_display["registers"] == 10 and len(original_display["instructions"]) == 30
-          and original_display["access"] == 17, "original display query matches validated 8.26.1 shape")
+          and original_display["access"] == 17, f"original display query matches validated {release} shape")
     expected_display = deepcopy(original_display)
     expected_display["instructions"].insert(0, {"opcode": "CONST_4", "RegisterA": 9,
                                                "NarrowLiteral": 1, "WideLiteral": 1})
@@ -167,7 +212,7 @@ def verify(args, work):
     patched_banner = after["methods"][BANNER]
     check(original_banner["access"] == 25 and original_banner["registers"] == 11
           and len(original_banner["instructions"]) == 54,
-          "original banner initializer matches validated 8.26.1 shape")
+          f"original banner initializer matches validated {release} shape")
     prefix = [
         {"opcode": "MOVE_OBJECT_FROM16", "RegisterA": 1, "RegisterB": 9},
         {"opcode": "CONST_16", "RegisterA": 0, "NarrowLiteral": 8, "WideLiteral": 8},
@@ -189,11 +234,11 @@ def verify(args, work):
     original_policy = before["methods"][POLICY]
     check(original_policy["registers"] == 3 and original_policy["access"] == 25
           and len(original_policy["instructions"]) == 22,
-          "original nullable ad-block policy matches validated 8.26.1 shape")
+          f"original nullable ad-block policy matches validated {release} shape")
     expected_policy = deepcopy(original_policy)
     expected_policy["instructions"] = [
         {"opcode": "SGET_OBJECT", "RegisterA": 0, "ReferenceType": 2,
-         "Reference": "Lfa;->a:Lfa;"},
+         "Reference": v["blocker"]},
         {"opcode": "RETURN_OBJECT", "RegisterA": 0},
     ] + original_policy["instructions"]
     check(after["methods"][POLICY] == expected_policy,
@@ -223,19 +268,11 @@ def verify(args, work):
         altered = [n for n in stable if n not in output.namelist() or source.read(n) != output.read(n)]
         check(not altered, "original native libraries and assets preserved byte-for-byte",
               f"checked={len(stable)} changed/missing={len(altered)}")
-    source_res = decode(args.original, args, work)
-    output_res = decode(args.patched, args, work)
     manifest_before = xml(source_res / "AndroidManifest.xml")
     manifest_after = xml(output_res / "AndroidManifest.xml")
-    # apktool moves versionName/versionCode out of XML into apktool.yml.
-    def versions(directory):
-        text = (directory / "apktool.yml").read_text()
-        return tuple(re.search(r"^  " + key + r":\s*(.*?)\s*$", text, re.M).group(1).strip("'\"")
-                     for key in ("versionName", "versionCode"))
-    original_version, output_version = versions(source_res), versions(output_res)
     check(manifest_before.get("package") == "com.ninegag.android.app"
-          and original_version == ("8.26.1", "80260100"),
-          "original package and version are 9GAG 8.26.1")
+          and original_version == (release, v["code"]),
+          f"original package and version are 9GAG {release}")
     check(original_version == output_version, "manifest versionName and versionCode preserved")
     app = manifest_after.find("application")
     if app is None:
